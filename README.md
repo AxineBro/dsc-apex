@@ -1,5 +1,5 @@
 [![RU](https://img.shields.io/badge/Русский-README.ru.md-blue?style=flat-square)](README.ru.md)
-# dsc-apex
+# Dsc Apex
 
 AI assistant for business process automation using GigaChat LLM and external APIs
 
