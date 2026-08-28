@@ -29,3 +29,6 @@ AI assistant for business process automation using GigaChat LLM and external API
   Business Analyst · UX/UI Designer  
   [GitHub](https://github.com/SergeyTerpugov)
 
+## License
+
+This project is distributed under a license [Apache License 2.0](LICENSE).
