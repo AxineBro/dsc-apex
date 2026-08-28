@@ -29,3 +29,6 @@
   Business Analyst · UX/UI Designer  
   [GitHub](https://github.com/SergeyTerpugov)
 
+## Лицензия
+
+Этот проект распространяется под лицензией [Apache License 2.0](LICENSE).
