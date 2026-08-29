@@ -29,6 +29,10 @@
   Business Analyst · UX/UI Designer  
   [GitHub](https://github.com/SergeyTerpugov)
 
+## Документация и архитектура
+- [Схема работы агента](architecture/behavior-flow.ru.md) — подробная блок-схема логики ИИ-помощника
+- API-документация (скоро)
+
 ## Лицензия
 
 Этот проект распространяется под лицензией [Apache License 2.0](LICENSE).

@@ -1,4 +1,4 @@
-[![RU](https://img.shields.io/badge/Русский-README.ru.md-blue?style=flat-square)](README.ru.md)
+[![Русский](https://img.shields.io/badge/Русский-Документация-blue?style=flat-square)](docs/ru/README.ru.md)
 # Dsc Apex
 
 AI assistant for business process automation using GigaChat LLM and external APIs
@@ -28,6 +28,10 @@ AI assistant for business process automation using GigaChat LLM and external API
 - **Sergei** — *DevOps / QA Engineer*  
   Business Analyst · UX/UI Designer  
   [GitHub](https://github.com/SergeyTerpugov)
+
+## Documentation and architecture
+- [The agent's work plan](docs/en/architecture/behavior-flow.en.md) — detailed flowchart of the AI assistant’s logic
+- API documentation (coming soon)
 
 ## License
 
