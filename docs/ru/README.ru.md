@@ -1,4 +1,4 @@
-[![EN](https://img.shields.io/badge/English-README.md-blue?style=flat-square)](README.md)
+[![English](https://img.shields.io/badge/English-Documentation-blue?style=flat-square)](../../README.md)
 # Dsc Apex
 
 ИИ-помощник для автоматизации бизнес-процессов с использованием GigaChat LLM и внешних API
