@@ -103,6 +103,7 @@ public class SessionMapper {
                     .expandedOnce(entity.getExpandedOnce() != null ? entity.getExpandedOnce() : false)
                     .currentIndex(entity.getCurrentIndex() != null ? entity.getCurrentIndex() : 0)
                     .reminderSentAt(entity.getReminderSentAt())
+                    .clientPhone(entity.getClientPhone())
                     .version(entity.getVersion())
                     .build();
         } catch (IllegalArgumentException e) {
@@ -144,6 +145,7 @@ public class SessionMapper {
                 .expandedOnce(domain.getExpandedOnce())
                 .currentIndex(domain.getCurrentIndex())
                 .reminderSentAt(domain.getReminderSentAt())
+                .clientPhone(domain.getClientPhone())
                 .version(domain.getVersion())
                 .build();
     }
