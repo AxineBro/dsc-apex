@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "complexName": "ЖК 'Тестовый'",
+    "address": "ул. Примерная, 1",
+    "area": 45.5,
+    "price": 7000000,
+    "floor": 5,
+    "totalFloors": 12,
+    "rooms": 1,
+    "status": "свободна",
+    "viewType": "park",
+    "parking": true
+  },
+  {
+    "id": 2,
+    "complexName": "ЖК 'Тестовый'",
+    "address": "ул. Примерная, 2",
+    "area": 52.0,
+    "price": 8200000,
+    "floor": 8,
+    "totalFloors": 12,
+    "rooms": 2,
+    "status": "свободна",
+    "viewType": "city",
+    "parking": false
+  }
+]
