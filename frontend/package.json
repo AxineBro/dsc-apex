@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && cp index.html dist/index.html && ls -lh dist/",
+    "build": "tsc -b && vite build && cp index.html dist/index.html && sed -i 's|<script type=\"module\" src=\"/src/main.tsx\"></script>|<script src=\"./widget.js\"></script>|' dist/index.html",
     "lint": "oxlint",
     "preview": "vite preview"
   },

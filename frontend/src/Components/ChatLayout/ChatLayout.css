@@ -7,9 +7,9 @@ html, body {
   overflow: hidden;
 }
 #ai-chat-iframe-container {
-  width: 100%;
-  height: 100%;
-  background: transparent;
+width: 100%;
+height: 100%;
+background: transparent;
 }
 .chat-layout {
   display: flex;
@@ -102,6 +102,13 @@ html, body {
   flex: 1;
   min-height: 0;
 }
+/* в full контент не должен залезать под кнопки */
+.chat-layout.full .messages-history {
+  padding-top: 68px;
+}
+.chat-layout.full .welcome-screen {
+  padding-top: 64px;
+}
 @keyframes chat-pop {
   from { opacity: 0; transform: scale(0.85) translateY(16px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
@@ -111,6 +118,7 @@ html, body {
   to { opacity: 1; }
 }
 
+/* мобила: без отступов, на весь сайт, крестик выше и правее */
 @media (max-width: 640px) {
   .chat-layout.full {
     width: 100%;
@@ -123,5 +131,11 @@ html, body {
   .floating-controls {
     top: 10px;
     right: 10px;
+  }
+  .chat-layout.full .messages-history {
+    padding-top: 58px;
+  }
+  .chat-layout.full .welcome-screen {
+    padding-top: 56px;
   }
 }
