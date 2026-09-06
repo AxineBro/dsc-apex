@@ -1,27 +1,12 @@
-﻿# ==================== СТАДИЯ СБОРКИ ====================
-FROM maven:3.9-eclipse-temurin-25 AS builder
-
+FROM maven:3.9-openjdk-17 AS build
 WORKDIR /app
-
 COPY pom.xml .
-COPY mvnw .
-COPY .mvn .mvn
-
-RUN chmod +x mvnw
-
-RUN ./mvnw dependency:go-offline -B
-
+RUN mvn dependency:go-offline -B
 COPY src ./src
-
-RUN ./mvnw clean package -DskipTests -B
-
-# ==================== СТАДИЯ ВЫПОЛНЕНИЯ ====================
-FROM eclipse-temurin:25-jre-alpine
-
+RUN mvn package -DskipTests
+FROM openjdk:17-slim
 WORKDIR /app
-
-COPY --from=builder /app/target/*.jar app.jar
-
+COPY --from=build /app/target/*.jar app.jar
+ENV JAVA_OPTS="-Xmx512m -Xms256m"
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-Xmx512m", "-jar", "app.jar"]
