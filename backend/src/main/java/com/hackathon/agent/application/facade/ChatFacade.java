@@ -114,8 +114,6 @@ public class ChatFacade {
 
             String reply = orchestrator.process(session, userMessage);
 
-            sessionManager.save(session);
-
             long duration = System.currentTimeMillis() - startTime;
             log.info("Message processed successfully: session={}, duration={}ms, replyLength={}",
                     sessionKey, duration, reply != null ? reply.length() : 0);

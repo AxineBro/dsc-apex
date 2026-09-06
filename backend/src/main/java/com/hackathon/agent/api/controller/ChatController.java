@@ -142,7 +142,7 @@ public class ChatController {
      * }
      * </pre>
      *
-     * @return объект {@link SessionInitResponse}, содержащий сгенерированный UUID,
+     * @return объект   {@link SessionInitResponse}, содержащий сгенерированный UUID,
      *         обёрнутый в {@link ResponseEntity} со статусом {@code 200 OK}.
      * @see SessionInitResponse
      */

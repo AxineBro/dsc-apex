@@ -2,6 +2,7 @@ package com.hackathon.agent.infrastructure.ai.tools;
 
 import com.hackathon.agent.application.orchestrator.AgentOrchestrator;
 import com.hackathon.agent.application.orchestrator.SessionManager;
+import com.hackathon.agent.domain.exception.ApartmentNotFoundException;
 import com.hackathon.agent.domain.model.Apartment;
 import com.hackathon.agent.domain.model.Filters;
 import com.hackathon.agent.domain.model.ScoredApartment;
@@ -137,6 +138,7 @@ public class GigaChatTools {
     Инструмент автоматически сохранит фильтры в сессии и увеличит счётчик циклов только при изменении бюджета или площади.
     Если по основным фильтрам ничего не найдено, будет автоматически применено расширение (один раз).
     Возвращает список квартир (может быть пустым). Если пусто – предложи клиенту изменить параметры или вызови transferToManager.
+    Важно: если параметр не указан, передавай null. Для этажа не используй 0 – это будет воспринято как конкретный этаж. Если этаж неизвестен, передай null
     """)
     public List<Apartment> searchApartments(
             @ToolParam(description = "Минимальная площадь в кв.м (BigDecimal)") BigDecimal areaMin,
@@ -159,6 +161,16 @@ public class GigaChatTools {
 
         long startTime = System.currentTimeMillis();
         try {
+            if (floor != null && floor <= 0) {
+                floor = null;
+            }
+            if (roomsMin != null && roomsMin <= 0) {
+                roomsMin = null;
+            }
+            if (roomsMax != null && roomsMax <= 0) {
+                roomsMax = null;
+            }
+
             Filters filters = new Filters(areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax);
             log.debug("Фильтры для поиска: {}", filters);
 
@@ -438,11 +450,16 @@ public class GigaChatTools {
             log.info("Коммерческое предложение сгенерировано для квартиры ID {}, длина текста {}, duration={}ms",
                     apartmentId, offerText.length(), duration);
             return offerText;
+        }catch (ApartmentNotFoundException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.warn("Квартира с ID {} не найдена в базе: duration={}ms, error={}",
+                    apartmentId, duration, e.getMessage(), e);
+            return "Квартиры с номером " + apartmentId + " нет в списке. Пожалуйста, выберите вариант из предложенного списка и укажите его номер (ID).";
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - startTime;
             log.error("Ошибка при генерации КП для квартиры ID {}: duration={}ms, error={}",
                     apartmentId, duration, e.getMessage(), e);
-            return "Произошла ошибка при формировании предложения. Обратитесь к менеджеру.";
+            return "Произошла техническая ошибка. Пожалуйста, попробуйте позже или свяжитесь с менеджером.";
         }
     }
 
@@ -462,6 +479,7 @@ public class GigaChatTools {
     Максимум 2 вызова за сессию. Если после двух вопросов данные неполные – автоматически будет вызван transferToManager.
     Используй этот инструмент только когда клиент не указал один из ключевых параметров (площадь, цена, комнаты, этаж).
     Не задавай вопросы, на которые можно ответить «да/нет» – вопросы должны быть открытыми и конкретными.
+    Важно: аргумент question должен содержать только текст вопроса, без лишних символов, кодов или истории диалога. Вопрос должен быть кратким и конкретным
     """)
     public String askClarification(
             @ToolParam(description = "Текст вопроса для клиента") String question
