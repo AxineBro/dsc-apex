@@ -310,7 +310,7 @@ Each request logs:
 | `APP_FLAT_LIMIT`               | Number of apartments to show at once.          | `5`                        |
 | `APP_SLOW_THRESHOLD_MS`        | Slow request threshold (chat).                 | `60000` (60 s)             |
 | `APP_SLOW_SCORING_THRESHOLD_MS`| Slow request threshold (scoring).              | `20000` (20 s)             |
-| `APP_TIMEOUT_REMINDER_WAIT_MINUTES` | Minutes to wait after reminder before escalation. | `5`) |
+| `APP_TIMEOUT_REMINDER_WAIT_MINUTES` | Minutes to wait after reminder before escalation. | `5`                |
 | `APP_TIMEOUT_SCHEDULER`        | Minutes of inactivity before first reminder.   | `10`                       |
 | `APP_DATA_APARTMENTS`          | Path to apartment data JSON.                   | `data/apartments.json`     |
 | `APP_OFFER_TEMPLATE`           | Path to offer template.                        | `templates/offer_template.txt` |
