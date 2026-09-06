@@ -1,0 +1,67 @@
+.thinking-plain {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #6b625f;
+  font-size: 13.5px;
+}
+
+.ti-dots {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.ti-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #F1912B;
+  animation: ti-bounce 1.2s infinite;
+}
+
+.ti-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ti-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes ti-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.ti-icon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.ti-icon svg {
+  width: 18px;
+  height: 18px;
+  filter: invert(0.55) sepia(0.9) saturate(4) hue-rotate(-15deg);
+}
+
+.ti-text {
+  animation: ti-fade 0.4s ease;
+  white-space: nowrap;
+}
+
+@keyframes ti-fade {
+  from { opacity: 0; transform: translateX(4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 640px) {
+  .thinking-plain {
+    font-size: 12.5px;
+    gap: 6px;
+    padding: 4px 2px;
+  }
+  .ti-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+}

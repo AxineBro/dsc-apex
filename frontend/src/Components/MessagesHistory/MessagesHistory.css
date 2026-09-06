@@ -1,0 +1,47 @@
+.messages-history {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 12px;
+    background: #f6f1ee;
+    border: none;
+    scrollbar-width: thin;
+    scrollbar-color: #d5c9c6 transparent;
+}
+
+.messages-history::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-history::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.messages-history::-webkit-scrollbar-thumb {
+    background: #d5c9c6;
+    border-radius: 3px;
+}
+
+.messages-history::-webkit-scrollbar-thumb:hover {
+    background: #c0b2af;
+}
+
+.quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-chips button {
+    background: #fff;
+    border: 1px solid #f0b27a;
+    color: #e07b1f;
+    border-radius: 12px;
+    font-size: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+}

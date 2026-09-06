@@ -1,0 +1,225 @@
+/* общий фон одинаковый с историей, без границы */
+.promt-input-field {
+    padding: 10px 12px 8px;
+    background: #f6f1ee;
+    border-top: none;
+    flex-shrink: 0;
+}
+
+.promt-input-field .text-input-holder {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 6px 6px 6px 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.promt-input-field #chat-input {
+    flex: 1;
+    display: block;
+    border: none;
+    background: transparent;
+    resize: none;
+    outline: none;
+    font-size: 14px;
+    line-height: 20px;
+    min-height: 20px;
+    max-height: 60px;
+    height: auto;
+    overflow-y: hidden;
+    font-family: inherit;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.promt-input-field #chat-input::placeholder {
+    line-height: 20px;
+    color: #a49a97;
+    opacity: 1;
+}
+
+.promt-input-field .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.promt-input-field .icon-btn svg {
+    width: 18px;
+    height: 18px;
+    filter: invert(0.45);
+}
+
+.promt-input-field .icon-btn:hover {
+    background: #f3efed;
+    box-shadow: 0 0 0 4px #f3efed, 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.promt-input-field .icon-btn:active {
+    transform: scale(0.92);
+}
+
+.promt-input-field #send-prompt-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #F1912B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.promt-input-field #send-prompt-btn svg {
+    width: 18px;
+    height: 18px;
+    filter: invert(1);
+}
+
+.promt-input-field #send-prompt-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 14px rgba(241, 145, 43, 0.5);
+}
+
+.promt-input-field #send-prompt-btn:active {
+    transform: scale(0.95);
+}
+
+.promt-input-field .promt-footer-note {
+    font-size: 10px;
+    color: #a49a97;
+    text-align: center;
+    margin-top: 6px;
+}
+
+/* === FULL: тот же фон, только инпут уже и больше === */
+.promt-input-field.full {
+    padding: 16px 12px 12px;
+    background: #f6f1ee;
+    border-top: none;
+}
+
+.promt-input-field.full .text-input-holder {
+    max-width: 75%;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    border-color: #ece3e0;
+    border-radius: 20px;
+    padding: 12px 12px 12px 14px;
+    gap: 10px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+}
+
+.promt-input-field.full #chat-input {
+    font-size: 15.5px;
+    line-height: 22px;
+    min-height: 22px;
+    max-height: 132px;
+    padding: 10px 0;
+}
+
+.promt-input-field.full #chat-input::placeholder {
+    line-height: 22px;
+}
+
+.promt-input-field.full .icon-btn {
+    width: 40px;
+    height: 40px;
+}
+
+.promt-input-field.full .icon-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.promt-input-field.full #send-prompt-btn {
+    width: 44px;
+    height: 44px;
+}
+
+.promt-input-field.full #send-prompt-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.promt-input-field.full .promt-footer-note {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: #6f6562;
+    margin-top: 10px;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* мобила: инпут на 100% ширины, интерфейс как в floating */
+@media (max-width: 640px) {
+  .promt-input-field.full {
+    padding: 8px 8px 6px;
+  }
+  .promt-input-field.full .text-input-holder {
+    max-width: 100%;
+    border-radius: 16px;
+    padding: 6px 6px 6px 8px;
+    gap: 8px;
+  }
+  .promt-input-field.full #chat-input {
+    font-size: 14px;
+    line-height: 20px;
+    min-height: 20px;
+    max-height: 120px;
+    padding: 8px 0;
+  }
+  .promt-input-field.full .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .promt-input-field.full .icon-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .promt-input-field.full #send-prompt-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .promt-input-field.full #send-prompt-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .promt-input-field.full .promt-footer-note {
+    max-width: 100%;
+    font-size: 10px;
+  }
+}
+
+.promt-input-field #chat-input:disabled {
+  opacity: 0.6;
+}
+
+.promt-input-field #send-prompt-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.promt-input-field .icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}

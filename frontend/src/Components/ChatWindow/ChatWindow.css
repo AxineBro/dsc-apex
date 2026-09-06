@@ -1,0 +1,56 @@
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    background: #f6f1ee;
+    overflow-x: hidden;
+}
+
+.welcome-screen {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    background: #f6f1ee;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.welcome-screen h1 {
+    font-size: 32px;
+    color: #1e3a5f;
+    margin: 0 0 12px;
+}
+
+.welcome-screen p {
+    font-size: 13.5px;
+    color: #6b625f;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .welcome-screen {
+    padding: 48px 16px 16px;
+    justify-content: flex-start;
+  }
+  .welcome-screen h1 {
+    font-size: 22px;
+    margin: 0 0 8px;
+  }
+  .welcome-screen p {
+    font-size: 13px;
+  }
+  .welcome-screen p br {
+    display: none;
+  }
+}
