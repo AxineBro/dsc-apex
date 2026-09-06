@@ -34,6 +34,7 @@ AI assistant for business process automation using GigaChat LLM and external API
 ## Documentation and architecture
 - [The agent's work plan](docs/en/architecture/behavior-flow.en.md) — detailed flowchart of the AI assistant’s logic
 - [API Documentation](docs/en/architecture/api_dock.en.md) — complete API reference with endpoints, session management, and configuration.
+- [File structure](docs/en/architecture/files_tree.en.md) — detailed description of the backend file structure.
 
 ## Architecture Overview (Backend)
 
