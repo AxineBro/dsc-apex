@@ -308,7 +308,7 @@ Content-Type: application/json
 | `APP_FLAT_LIMIT`                   | Количество квартир для показа за раз.           | `5`                           |
 | `APP_SLOW_THRESHOLD_MS`            | Порог медленного запроса (чат).                 | `60000` (60 с)                |
 | `APP_SLOW_SCORING_THRESHOLD_MS`    | Порог медленного запроса (оценка).              | `20000` (20 с)                |
-| `APP_TIMEOUT_REMINDER_WAIT_MINUTES`| Минут ожидания после напоминания до эскалации.  | ⚠️ В вашем `.env` указано `300000` – **ошибка** (должно быть целое число минут, например `5`) |
+| `APP_TIMEOUT_REMINDER_WAIT_MINUTES`| Минут ожидания после напоминания до эскалации.  | `5`                           |
 | `APP_TIMEOUT_SCHEDULER`            | Минут бездействия до первого напоминания.       | `10`                          |
 | `APP_DATA_APARTMENTS`              | Путь к JSON-файлу с данными квартир.            | `data/apartments.json`        |
 | `APP_OFFER_TEMPLATE`               | Путь к шаблону коммерческого предложения.       | `templates/offer_template.txt`|
