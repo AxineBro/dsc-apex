@@ -220,4 +220,3 @@ In future iterations we plan to add:
 ## License
 
 This project is distributed under a license [Apache License 2.0](LICENSE).
-```
