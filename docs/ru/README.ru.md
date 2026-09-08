@@ -5,12 +5,52 @@
 
 ИИ-помощник для автоматизации бизнес-процессов с использованием GigaChat LLM и внешних API
 
+## Продакшен-развёртывание (для конечных пользователей)
+
+Самый простой способ запустить **Dsc Apex** — использовать готовые Docker-образы, опубликованные в [GitHub Packages](https://github.com/AxineBro/dsc-apex/pkgs/container/dsc-apex).  
+Никакой сборки, Java или Node.js не требуется — нужны только **Docker** и **Docker Compose**.
+
+### Необходимые условия
+- [Docker](https://docs.docker.com/get-docker/) (версия 20.10+)
+- [Docker Compose](https://docs.docker.com/compose/install/) (версия 2.0+)
+
+### Установка в одну команду
+
+Выберите вашу операционную систему:
+
+| ОС | Команда |
+| :--- | :--- |
+| **Linux / macOS** | `curl -sSL https://raw.githubusercontent.com/AxineBro/dsc-apex/main/install.sh \| bash` |
+| **Windows (CMD)** | `curl -sSL https://raw.githubusercontent.com/AxineBro/dsc-apex/main/install.bat -o install.bat && install.bat` |
+| **Windows (PowerShell)** | `Invoke-WebRequest -Uri "https://raw.githubusercontent.com/AxineBro/dsc-apex/main/install.ps1" -OutFile "install.ps1"; .\install.ps1` |
+
+Скрипт загрузит `docker-compose.yml` и `.env.example` в текущую папку.
+
+### Следующие шаги
+
+1. **Отредактируйте файл `.env`** – укажите свой `GIGA_CHAT_API_KEY` (обязательно) и при необходимости измените другие переменные.
+2. **Запустите приложение:**
+   ```bash
+   docker-compose up -d
+   ```
+3. Откройте http://localhost в браузере.
+
+Все сервисы (бэкенд, фронтенд, nginx, PostgreSQL) запустятся автоматически.  
+Виджет-чат будет доступен на главной странице.
+
+### Скачать из Releases
+
+Вы также можете загрузить скрипты (и compose-файл) вручную со [страницы Releases](https://github.com/AxineBro/dsc-apex/releases).  
+Ищите файлы `install.sh`, `install.bat`, `install.ps1`, `docker-compose.yml` и `.env.example`.
+
+Если вы хотите собрать образы локально из исходников вместо использования готовых, см. раздел **Разработка** ниже.
+
 ## Технологический стек
 
 | Слой                 | Технологии                                                      |
 | :------------------- | :--------------------------------------------------------------- |
 | **Фронтенд**         | `React 19` · `Vite`                                              |
-| **Бэкенд**          | `Java 17` · `Spring Boot 4.x`                                    |
+| **Бэкенд**          | `Java 25` · `Spring Boot 4.x`                                    |
 | **База данных**         | `PostgreSQL 15`                                                  |
 | **Веб сервер**       | `Nginx`                                                          |
 | **Контейнеризация** | `Docker` · `Docker Compose`                                      |
@@ -35,6 +75,127 @@
 - [Схема работы агента](architecture/behavior-flow.ru.md) — подробная блок-схема логики ИИ-помощника
 - [API-документация](architecture/api_dock.ru.md) — полное описание эндпоинтов, управления сессиями и конфигурации.
 - [Структура файлов](architecture/files_tree.ru.md) — подробное описание файловой структуры бэкенда.
+
+
+## Обзор виджета фронтенда
+
+Встраиваемый ИИ-консультант для сайта ДСК. Собран с помощью `Vite` в один `widget.js`, монтируется через `iframe` с изоляцией стилей.
+
+| Режим | Поведение |
+| :--- | :--- |
+| `closed` | Круглая кнопка 60px, `iframe` 76x76 |
+| `floating` | Карточка 400x680, шапка + история + поле ввода, быстрые чипсы |
+| `full` | Модальное окно с отступом 24px + затемнение, `SideMenu` 280px + чат, приветственный экран с 4 карточками |
+| `mobile <=640px` | `floating` открывается как `full`, без отступов, `100dvh`, боковое меню полноэкранное с fade-оверлеем |
+
+Ключевые возможности:
+- `GET /api/v1/chat/init` + `POST /api/v1/chat/message` с `X-Session-Id`, `sid` сохраняется в `localStorage` как `dsk_sid`
+- Система подсказок: 20 промптов в 4 группах (`pick`, `mortgage`, `build`, `docs`), по 1 случайной из группы
+- Индикатор размышления (9 вращающихся статусов, 4.5–5.5 с), кнопка отправки блокируется во время загрузки
+- Редактирование последнего сообщения / регенерация, копирование, таблицы в markdown, пилюля `sys-info` для передачи менеджеру
+- Синхронизация родитель ↔ iframe через `postMessage({ type: 'CHAT_MODE_CHANGE', mode })`, блокировка прокрутки body в режиме `full`
+
+## Интеграция виджета (демо в 1 строку)
+
+```html
+<script src="/widget.js"></script>
+```
+
+Скрипт создаёт `iframe.dsk-chat-iframe` и монтирует `ChatWidget` внутри. Глобальные CSS не протекают.
+
+## Структура репозитория
+
+```text
+dsc-apex/
+  frontend/
+    index.html                  # копия главной страницы ДСК + <script src="./widget.js">
+    public/CopyAssetsDSK/       # копия ассетов (bitrix, upload, css, img)
+    src/main.tsx                # точка входа виджета, монтирование iframe
+    src/Components/             # ChatWidget, ChatLayout, ChatWindow, SideMenu, Suggestions
+    src/api/chatApi.ts          # initSession + sendMessage
+    dist/                       # результат сборки, НЕ в git
+      widget.js
+      index.html
+      CopyAssetsDSK/
+  backend/
+    src/main/java/...           # ChatController, ChatFacade, AgentOrchestrator
+    src/main/resources/         # prompts/, templates/, data/apartments.json
+  nginx/nginx.conf              # / -> index.html, /api/ -> backend:8080
+  docker-compose.yml
+  .env                          # НЕ в git
+```
+
+## Разработка (быстрый старт)
+
+### 1. Разработка фронтенда (UI + живой бэкенд)
+
+```bash
+cd frontend
+npm ci
+npm run dev
+# откройте http://localhost:5173
+```
+
+`vite.config.ts` уже проксирует `/api` на `http://localhost:8080` для разработки. В продакшене используются относительные `/api/...` через nginx, пересборка не требуется.
+
+### 2. Разработка бэкенда
+
+```bash
+docker compose up db -d
+cd backend
+export GIGA_CHAT_API_KEY='xxx'
+export GIGA_CHAT_SCOPE='GIGACHAT_API_PERS'
+export GIGA_CHAT_MODEL='GigaChat'
+export DB_URL=jdbc:postgresql://localhost:5432/agentdb
+export DB_USERNAME=postgres
+export DB_PASSWORD=secret
+./mvnw spring-boot:run
+# проверка: curl http://localhost:8080/api/v1/chat/init
+```
+
+### 3. Полный стек через Docker (демо)
+
+```bash
+cd frontend && npm ci && npm run build
+cd ..
+docker compose up db backend nginx -d --build
+# откройте http://localhost:80/
+# проверка: curl http://localhost:80/api/v1/chat/init
+```
+
+`nginx` отдаёт `frontend/dist/index.html` и проксирует `/api/*` на `backend:8080`, поэтому `CORS` не требуется.
+
+<details>
+<summary><b>Переменные окружения</b></summary>
+
+| Переменная | Значение по умолчанию | Описание |
+| :--- | :--- | :--- |
+| `GIGA_CHAT_API_KEY` | — | Ключ авторизации (base64) из SaluteAI, обязателен |
+| `GIGA_CHAT_SCOPE` | `GIGACHAT_API_PERS` | должен соответствовать типу ключа |
+| `GIGA_CHAT_MODEL` | `GigaChat` | используйте базовую модель для бесплатного тарифа, `GigaChat-Pro` платная |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/agentdb` | `db:5432` внутри compose |
+| `DB_USERNAME` / `DB_PASS` | `postgres` / `secret` | обратите внимание: `DB_PASS` в compose против `DB_PASSWORD` для `mvn` |
+| `APP_MAX_CYCLES` | `5` | количество итераций поиска |
+| `APP_FLAT_LIMIT` | `5` | максимум квартир в выдаче |
+
+Полный список смотрите в `docs/ru/architecture/api_dock.ru.md`.
+
+</details>
+
+<details>
+<summary><b>Заметки по сборке и устранение проблем</b></summary>
+
+- Сборка: `tsc -b && vite build` как библиотека `IIFE` в один `widget.js`. React встраивается внутрь, `assetsInlineLimit` встраивает логотипы.
+- `public/*` копируется в `dist/*` автоматически. `index.html` копируется через скрипт `cp index.html dist/index.html`, потому что `lib`-режим игнорирует его.
+- Никогда не коммитьте `dist/`, `node_modules/`, `.env`.
+- Предпросмотр через `file://` никогда не работает для копии ДСК (`BX`, `$`, `CORS`). Используйте `npx serve dist -l 4173`, а не двойной клик.
+- `process is not defined` в `widget.js` — исправлено через `define: { 'process.env.NODE_ENV': '"production"' }` в `vite.config.ts`.
+- `402 Payment Required` от GigaChat — переключите `GIGA_CHAT_MODEL` на `GigaChat`, проверьте активацию модели в кабинете SaluteAI.
+- `Row was already updated (optimistic lock)` — исправлено в `ChatFacade` повторным сохранением, см. ветки `fix/lombok-jdk25`, `fix/session-double-save`.
+- `value too long for type character varying(20)` в `manager_tasks` — расширьте `client_phone` до `varchar(50)` и очистите номера-заглушки.
+
+</details>
+
 
 ## Обзор архитектуры (бэкенд)
 

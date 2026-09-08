@@ -5,6 +5,46 @@
 
 AI assistant for business process automation using GigaChat LLM and external APIs
 
+## Production Deployment (for end users)
+
+The simplest way to run **Dsc Apex** is to use the ready‑to‑run Docker images published in [GitHub Packages](https://github.com/AxineBro/dsc-apex/pkgs/container/dsc-apex).  
+No building, no Java, no Node.js required – just **Docker** and **Docker Compose**.
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) (version 20.10+)
+- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0+)
+
+### One‑click installation
+
+Choose your operating system:
+
+| OS | Command |
+| :--- | :--- |
+| **Linux / macOS** | `curl -sSL https://raw.githubusercontent.com/AxineBro/dsc-apex/main/install.sh \| bash` |
+| **Windows (CMD)** | `curl -sSL https://raw.githubusercontent.com/AxineBro/dsc-apex/main/install.bat -o install.bat && install.bat` |
+| **Windows (PowerShell)** | `Invoke-WebRequest -Uri "https://raw.githubusercontent.com/AxineBro/dsc-apex/main/install.ps1" -OutFile "install.ps1"; .\install.ps1` |
+
+The script will download `docker-compose.yml` and `.env.example` into the current folder.
+
+### Next steps
+
+1. **Edit the `.env` file** – set your `GIGA_CHAT_API_KEY` (required) and adjust any other variables if needed.
+2. **Start the application:**
+   ```bash
+   docker-compose up -d
+   ```
+3. Open http://localhost in your browser.
+
+All services (backend, frontend, nginx, PostgreSQL) will start automatically.  
+The frontend widget will be available on the main page.
+
+### Download from Releases
+
+You can also download the scripts (and the compose file) manually from the [Releases page](https://github.com/AxineBro/dsc-apex/releases).  
+Look for the `install.sh`, `install.bat`, `install.ps1`, `docker-compose.yml` and `.env.example` assets.
+
+If you want to build the images locally from source instead of using pre‑built ones, see the **Development Quick Start** section below.
+
 ## Technology Stack
 
 | Layer                | Technologies                                                     |
@@ -84,7 +124,7 @@ dsc-apex/
   .env                          # NOT in git
 ```
 
-## Quick Start
+## Development Quick Start
 
 ### 1. Frontend dev (UI + live backend)
 
