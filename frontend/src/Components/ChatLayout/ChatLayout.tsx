@@ -13,6 +13,12 @@ interface MessageInfo {
   createdAt: number;
 }
 
+interface StoredChatItem {
+  id: string;
+  title: string;
+  updatedAt: number;
+}
+
 interface ChatProps {
   mode: ChatModes;
   onModeChange: (mode: ChatModes) => void;
@@ -20,18 +26,22 @@ interface ChatProps {
   onEdit: (id: string, text: string) => void;
   onRegenerate: () => void;
   onNewChat?: () => void;
+  onSelectChat: (id: string) => void;
+  onDeleteChat: (id: string) => void;
   messages: MessageInfo[];
+  chats: StoredChatItem[];
+  activeChatId: string | null;
   isLoading: boolean;
   isThinking: boolean;
 }
 
-function ChatLayout({ mode, onModeChange, onSendMessage, onEdit, onRegenerate, onNewChat, messages, isLoading, isThinking }: ChatProps) {
+function ChatLayout({ mode, onModeChange, onSendMessage, onEdit, onRegenerate, onNewChat, onSelectChat, onDeleteChat, messages, chats, activeChatId, isLoading, isThinking }: ChatProps) {
   if (mode === 'closed') return null;
 
   if (mode === 'full') {
     return (
       <div className="chat-layout full">
-        <SideMenu isVisible={true} onNewChat={onNewChat} />
+        <SideMenu isVisible={true} chats={chats} activeChatId={activeChatId} onSelectChat={onSelectChat} onDeleteChat={onDeleteChat} onNewChat={onNewChat} />
         <div className="chat-main">
           <div className="floating-controls">
             <ChatResizeButtons onModeChange={onModeChange} mode={mode} />

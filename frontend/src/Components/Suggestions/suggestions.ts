@@ -4,11 +4,17 @@ export type SuggestionIcon =
   | 'park'
   | 'sunny'
   | 'search'
-  | 'work'
   | 'docs'
   | 'folder'
   | 'construction'
-  | 'chat';
+  | 'chat'
+  | 'money'
+  | 'man'
+  | 'education'
+  | 'parking'
+  | 'garage'
+  | 'city'
+  | 'color';
 
 export interface SuggestionItem {
   id: string;
@@ -25,52 +31,51 @@ export interface SuggestionGroup {
 
 export const SUGGESTION_GROUPS: SuggestionGroup[] = [
   {
-    id: 'pick',
+    id: 'params',
     title: 'Подбор',
     items: [
-      { id: 'pick-1', label: 'Подобрать квартиру по параметрам', prompt: 'Помоги подобрать квартиру: 2-комнатная, до 6 млн, средний этаж', icon: 'house' },
-      { id: 'pick-2', label: 'Двушка в Европейском', prompt: 'Какие есть двухкомнатные квартиры в ЖК Европейский?', icon: 'bed' },
-      { id: 'pick-3', label: 'С видом на парк', prompt: 'Покажи квартиры с видом на парк', icon: 'park' },
-      { id: 'pick-4', label: 'На солнечной стороне', prompt: 'Какие квартиры на солнечной стороне?', icon: 'sunny' },
-      { id: 'pick-5', label: 'До 6 млн рублей', prompt: 'Что есть до 6 млн рублей?', icon: 'search' },
+      { id: 'par-1', label: '2-комнатная 50–60 м²', prompt: 'Подбери 2-комнатную квартиру площадью 50–60 м²', icon: 'bed' },
+      { id: 'par-2', label: '1-комнатная с отделкой', prompt: 'Покажи 1-комнатные квартиры с отделкой', icon: 'color' },
+      { id: 'par-3', label: '3-комнатная для семьи', prompt: 'Нужна 3-комнатная квартира для семьи с детьми', icon: 'man' },
+      { id: 'par-4', label: 'Не первый этаж', prompt: 'Подбери квартиру не на первом и не на последнем этаже', icon: 'sunny' },
+      { id: 'par-5', label: 'С лоджией', prompt: 'Покажи квартиры с лоджией или балконом', icon: 'search' },
     ],
   },
   {
-    id: 'mortgage',
-    title: 'Ипотека',
+    id: 'place',
+    title: 'Район',
     items: [
-      { id: 'mor-1', label: 'Ипотечные программы', prompt: 'Какие ипотечные программы есть?', icon: 'work' },
-      { id: 'mor-2', label: 'Первый взнос и платеж', prompt: 'Какой первый взнос и какой будет ежемесячный платеж?', icon: 'docs' },
-      { id: 'mor-3', label: 'Рассрочка от застройщика', prompt: 'Есть ли рассрочка от застройщика?', icon: 'folder' },
-      { id: 'mor-4', label: 'Маткапитал', prompt: 'Можно ли купить с маткапиталом?', icon: 'house' },
-      { id: 'mor-5', label: 'Ставка и условия', prompt: 'Какая сейчас ставка и условия ипотеки?', icon: 'search' },
+      { id: 'pla-1', label: 'У парка', prompt: 'Покажи квартиры рядом с парком', icon: 'park' },
+      { id: 'pla-2', label: 'В тихом районе', prompt: 'Какие квартиры есть в тихом спальном районе?', icon: 'city' },
+      { id: 'pla-3', label: 'Рядом со школой', prompt: 'Нужна квартира рядом со школой и детским садом', icon: 'education' },
+      { id: 'pla-4', label: 'С видом на город', prompt: 'Покажи квартиры с видом на город', icon: 'city' },
+      { id: 'pla-5', label: 'Рядом с транспортом', prompt: 'Какие квартиры рядом с остановкой и транспортом?', icon: 'search' },
     ],
   },
   {
-    id: 'build',
-    title: 'Стройка',
+    id: 'price',
+    title: 'Бюджет',
     items: [
-      { id: 'bld-1', label: 'Ход строительства', prompt: 'Какой ход строительства сейчас?', icon: 'construction' },
-      { id: 'bld-2', label: 'Когда сдача?', prompt: 'Когда сдача ЖК Крымский квартал?', icon: 'house' },
-      { id: 'bld-3', label: 'Какие ЖК уже сданы?', prompt: 'Какие ЖК уже сданы?', icon: 'folder' },
-      { id: 'bld-4', label: 'Инфраструктура рядом', prompt: 'Что с инфраструктурой рядом: парки, школы?', icon: 'park' },
-      { id: 'bld-5', label: 'Кто застройщик?', prompt: 'Кто застройщик и сколько домов сдано?', icon: 'work' },
+      { id: 'pri-1', label: 'До 6 млн рублей', prompt: 'Что есть до 6 миллионов рублей?', icon: 'money' },
+      { id: 'pri-2', label: 'Двушка до 7 млн', prompt: 'Найди 2-комнатную квартиру до 7 миллионов', icon: 'money' },
+      { id: 'pri-3', label: 'Сравнить по цене', prompt: 'Сравни варианты по цене и площади', icon: 'money' },
+      { id: 'pri-4', label: 'Самая выгодная', prompt: 'Какой вариант самый выгодный по цене за метр?', icon: 'money' },
+      { id: 'pri-5', label: 'До 5 млн', prompt: 'Покажи квартиры до 5 миллионов рублей', icon: 'money' },
     ],
   },
   {
-    id: 'docs',
-    title: 'Документы',
+    id: 'features',
+    title: 'Характеристики',
     items: [
-      { id: 'doc-1', label: 'Документы для покупки', prompt: 'Какие документы нужны для покупки квартиры?', icon: 'docs' },
-      { id: 'doc-2', label: 'Сделка дистанционно', prompt: 'Можно ли оформить сделку дистанционно?', icon: 'folder' },
-      { id: 'doc-3', label: 'Регистрация сделки', prompt: 'Сколько длится регистрация сделки?', icon: 'work' },
-      { id: 'doc-4', label: 'Покупка по доверенности', prompt: 'Можно ли купить по доверенности?', icon: 'house' },
-      { id: 'doc-5', label: 'Связаться с менеджером', prompt: 'Хочу связаться с менеджером', icon: 'chat' },
+      { id: 'fea-1', label: 'С парковкой', prompt: 'Есть ли квартиры с парковкой или паркингом?', icon: 'parking' },
+      { id: 'fea-2', label: 'С гаражом', prompt: 'Есть ли варианты с гаражом?', icon: 'garage' },
+      { id: 'fea-3', label: 'С кладовой', prompt: 'Покажи квартиры с кладовой', icon: 'folder' },
+      { id: 'fea-4', label: 'С отделкой', prompt: 'Какие квартиры сдаются с отделкой?', icon: 'color' },
+      { id: 'fea-5', label: 'Средний этаж', prompt: 'Подбери квартиру на среднем этаже', icon: 'construction' },
     ],
   },
 ];
 
-// по 1 случайной из каждой группы = всегда 4 штуки из разных групп
 export function getRandomStarter(): SuggestionItem[] {
   return SUGGESTION_GROUPS.map((g) => {
     const i = Math.floor(Math.random() * g.items.length);

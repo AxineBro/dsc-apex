@@ -6,21 +6,21 @@ import VariantsIcon from '../../assets/icons/looking_variants.svg?react';
 import TableIcon from '../../assets/icons/table-chart-view.svg?react';
 import HouseIcon from '../../assets/icons/house.svg?react';
 import DocsIcon from '../../assets/icons/docs.svg?react';
-import WorkIcon from '../../assets/icons/work.svg?react';
-import ConstructionIcon from '../../assets/icons/construction.svg?react';
-import FolderIcon from '../../assets/icons/folder.svg?react';
+import ParkIcon from '../../assets/icons/park.svg?react';
+import MoneyIcon from '../../assets/icons/money.svg?react';
+import ManIcon from '../../assets/icons/man.svg?react';
 import ChatIcon from '../../assets/icons/chat-bubble-outline.svg?react';
 
 const STEPS = [
   { text: 'Думаю…', Icon: ChatIcon },
   { text: 'Анализирую запрос…', Icon: SearchIcon },
   { text: 'Смотрю варианты…', Icon: VariantsIcon },
-  { text: 'Сравниваю квартиры…', Icon: TableIcon },
-  { text: 'Проверяю цены и площади…', Icon: DocsIcon },
-  { text: 'Уточняю детали…', Icon: WorkIcon },
-  { text: 'Проверяю наличие…', Icon: FolderIcon },
-  { text: 'Подбираю лучшее…', Icon: HouseIcon },
-  { text: 'Формирую ответ…', Icon: ConstructionIcon },
+  { text: 'Сравниваю планировки…', Icon: TableIcon },
+  { text: 'Проверяю площади…', Icon: DocsIcon },
+  { text: 'Ищу у парка…', Icon: ParkIcon },
+  { text: 'Считаю бюджет…', Icon: MoneyIcon },
+  { text: 'Подбираю для семьи…', Icon: ManIcon },
+  { text: 'Формирую ответ…', Icon: HouseIcon },
 ];
 
 function ThinkingIndicator() {

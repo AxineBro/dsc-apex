@@ -18,7 +18,6 @@
   transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1), flex-basis 0.32s cubic-bezier(0.4, 0, 0.2, 1), padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* первый кадр после открытия full — без анимации ширины, иначе видно растягивание */
 .side-menu.no-anim {
   transition: none;
 }
@@ -125,7 +124,6 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  /* черный плюс -> белый */
   filter: brightness(0) invert(1);
 }
 
@@ -190,16 +188,15 @@
 .side-item {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 0;
   border: none;
   background: transparent;
   border-radius: 11px;
-  padding: 11px 12px;
-  cursor: pointer;
-  text-align: left;
+  padding: 0;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .side-item:hover {
@@ -208,6 +205,21 @@
 
 .side-item.active {
   background: #fff3e8;
+}
+
+.side-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  background: transparent;
+  border-radius: 11px 0 0 11px;
+  padding: 11px 6px 11px 12px;
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
 }
 
 .side-item.active .side-item-title {
@@ -245,6 +257,59 @@
   flex-shrink: 0;
 }
 
+.side-item-delete {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  align-self: center;
+  margin-right: 4px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.side-item-delete svg {
+  width: 15px;
+  height: 15px;
+  filter: invert(0.45);
+}
+
+.side-item-delete .icon-filled {
+  display: none;
+}
+
+.side-item-delete .icon-outline {
+  display: flex;
+}
+
+.side-item:hover .side-item-delete,
+.side-item.active .side-item-delete {
+  opacity: 1;
+}
+
+.side-item-delete:hover {
+  background: #fff;
+  box-shadow: 0 0 0 3px #f3efed, 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.side-item-delete:hover .icon-filled {
+  display: flex;
+}
+
+.side-item-delete:hover .icon-outline {
+  display: none;
+}
+
+.side-item-delete:hover svg {
+  filter: none;
+}
+
 .side-empty {
   font-size: 13px;
   color: #a49a97;
@@ -272,7 +337,6 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* мобила: как меню на сайте ДСК — fade на весь экран, без выезда слева */
 @media (max-width: 640px) {
   .side-menu {
     position: absolute;
@@ -353,5 +417,9 @@
     width: 16px;
     height: 16px;
     filter: invert(0.3);
+  }
+
+  .side-item-delete {
+    opacity: 1;
   }
 }

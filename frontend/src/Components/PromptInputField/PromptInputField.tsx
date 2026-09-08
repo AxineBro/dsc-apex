@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import './PromptInputField.css';
 import SendIcon from '../../assets/icons/send.svg?react';
-import AttachIcon from '../../assets/icons/attach-file.svg?react';
+// import AttachIcon from '../../assets/icons/attach-file.svg?react';
 
 interface InputFieldProps {
     onSendMessage: (message: string) => void;
@@ -47,9 +47,11 @@ function PromptInputField({ onSendMessage, variant = 'floating', disabled = fals
     return (
         <div className={'promt-input-field ' + variant}>
             <div className="text-input-holder">
+                {/* прикрепление файлов скрыто, вернем когда будет бек
                 <button className="icon-btn" title="Прикрепить" type="button" disabled={disabled} onClick={() => alert('Прикрепление файлов скоро')}>
                     <AttachIcon />
                 </button>
+                */}
                 <textarea
                     ref={taRef}
                     id="chat-input"
