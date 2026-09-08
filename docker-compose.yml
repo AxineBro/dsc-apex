@@ -2,40 +2,29 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/axinebro/dsc-backend:latest
     container_name: java-backend
     ports:
       - "8081:8080"
     environment:
-      # GigaChat
       - GIGA_CHAT_API_KEY=${GIGA_CHAT_API_KEY}
       - GIGA_CHAT_SCOPE=${GIGA_CHAT_SCOPE:-GIGACHAT_API_PERS}
       - GIGA_CHAT_MODEL=${GIGA_CHAT_MODEL:-GigaChat-Pro}
       - GIGA_CHAT_UNSAFE_SSL=${GIGA_CHAT_UNSAFE_SSL:-true}
-      
-      # База данных
       - DB_URL=jdbc:postgresql://db:5432/agentdb
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASS:-secret}
       - DB_DDL_AUTO=${DB_DDL_AUTO:-update}
       - DB_SHOW_SQL=${DB_SHOW_SQL:-false}
       - DB_FORMAT_SQL=${DB_FORMAT_SQL:-true}
-      
-      # Лимиты
       - APP_MAX_CYCLES=${APP_MAX_CYCLES:-5}
       - APP_BATCH_SIZE=${APP_BATCH_SIZE:-5}
       - APP_FLAT_LIMIT=${APP_FLAT_LIMIT:-5}
       - APP_SLOW_THRESHOLD_MS=${APP_SLOW_THRESHOLD_MS:-60000}
       - APP_SLOW_SCORING_THRESHOLD_MS=${APP_SLOW_SCORING_THRESHOLD_MS:-20000}
-      
-      # Пути к ресурсам
       - APP_DATA_APARTMENTS=${APP_DATA_APARTMENTS:-data/apartments.json}
       - APP_OFFER_TEMPLATE=${APP_OFFER_TEMPLATE:-templates/offer_template.txt}
       - APP_SYSTEM_PROMPT=${APP_SYSTEM_PROMPT:-prompts/system_instruction.txt}
-      
-      # JVM
       - JAVA_OPTS=${JAVA_OPTS:--Xmx512m -Xms256m}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
     env_file:
@@ -46,25 +35,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      # Монтируем ресурсы для гибкости (чтобы менять промпты без пересборки)
-      - ./backend/src/main/resources/prompts:/app/prompts
-      - ./backend/src/main/resources/templates:/app/templates
-      - ./backend/src/main/resources/data:/app/data
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/axinebro/dsc-frontend:latest
     container_name: react-frontend
     networks:
       - app-network
     restart: unless-stopped
 
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    image: ghcr.io/axinebro/dsc-nginx:latest
     container_name: nginx-proxy
     ports:
       - "80:80"
@@ -72,8 +52,6 @@ services:
     depends_on:
       - backend
       - frontend
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro
     networks:
       - app-network
     restart: unless-stopped
