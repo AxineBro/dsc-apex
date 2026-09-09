@@ -1,7 +1,12 @@
 [![Русский](https://img.shields.io/badge/Русский-Документация-blue?style=flat-square)](docs/ru/README.ru.md)
 [![License](https://img.shields.io/badge/License-Apache2.0-green?style=flat-square)](LICENSE)
 
-# Dsc Apex
+<div align="center">
+  <h1>Dsc Apex</h1>
+  <p>
+    <img src="docs/img/logo.png" alt="Dsc Apex logo" width="300">
+  </p>
+</div>
 
 AI assistant for business process automation using GigaChat LLM and external APIs
 

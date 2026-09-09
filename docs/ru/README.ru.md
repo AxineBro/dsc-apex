@@ -1,7 +1,12 @@
 [![English](https://img.shields.io/badge/English-Documentation-blue?style=flat-square)](../../README.md)
 [![Лицензия](https://img.shields.io/badge/Лицензия-Apache2.0-green?style=flat-square)](../../LICENSE)
 
-# Dsc Apex
+<div align="center">
+  <h1>Dsc Apex</h1>
+  <p>
+    <img src="../img/logo.png" alt="Dsc Apex логотип" width="300">
+  </p>
+</div>
 
 ИИ-помощник для автоматизации бизнес-процессов с использованием GigaChat LLM и внешних API
 
