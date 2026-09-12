@@ -3,9 +3,11 @@ package com.hackathon.agent.api.controller;
 import com.hackathon.agent.infrastructure.persistence.entity.ManagerTaskEntity;
 import com.hackathon.agent.infrastructure.persistence.repository.ManagerTaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -67,7 +69,8 @@ public class ManagerTaskController {
      *
      * @param limit максимальное количество возвращаемых задач.
      *              Значение по умолчанию — {@code 50}; фактически применяется
-     *              {@code min(limit, 200)}.
+     *              {@code max(1, min(limit, 200))} — защита от {@code limit <= 0}
+     *              и от чрезмерно больших ответов.
      * @return список задач {@link ManagerTaskDto}, обёрнутый в {@link java.util.List}.
      *         Может быть пустым, если задач нет.
      * @see ManagerTaskDto
@@ -75,8 +78,10 @@ public class ManagerTaskController {
      */
     @GetMapping
     public List<ManagerTaskDto> list(@RequestParam(defaultValue = "50") int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 200));
+
         return repository.findAll(
-                        PageRequest.of(0, Math.min(limit, 200), Sort.by("createdAt").descending()))
+                        PageRequest.of(0, safeLimit, Sort.by("createdAt").descending()))
                 .map(this::toDto)
                 .toList();
     }
@@ -115,14 +120,17 @@ public class ManagerTaskController {
      * @param body тело запроса, содержащее поле {@code status}.
      *             Может быть пустым — тогда статус не изменяется.
      * @return обновлённое представление задачи {@link ManagerTaskDto}.
-     * @throws java.util.NoSuchElementException если задача с указанным {@code id}
-     *                                          не найдена (возбуждается {@link java.util.Optional#orElseThrow()}).
+     * @throws org.springframework.web.server.ResponseStatusException если задача с указанным {@code id}
+     *                                          не найдена — возвращается HTTP 404 Not Found.
      * @see ManagerTaskDto
      * @see ManagerTaskEntity
      */
     @PatchMapping("/{id}")
     public ManagerTaskDto setStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        ManagerTaskEntity e = repository.findById(id).orElseThrow();
+        ManagerTaskEntity e = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Manager task " + id + " not found"));
+
         e.setStatus(body.getOrDefault("status", e.getStatus()));
         return toDto(repository.save(e));
     }
