@@ -210,6 +210,10 @@ public class ComplexCatalog {
      * @return нормализованное название; пустая строка, если вход {@code null}
      */
     private static String norm(String s) {
-        return s == null ? "" : s.replaceAll("[«»\"]", "").trim().toLowerCase(Locale.ROOT);
+        return s == null ? "" : s
+                .replaceAll("[«»\"]", "")
+                .replace('ё','е')
+                .replace('Ё','Е')
+                .trim().toLowerCase(Locale.ROOT).trim().toLowerCase(Locale.ROOT);
     }
 }

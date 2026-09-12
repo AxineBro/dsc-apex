@@ -275,7 +275,10 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
         if (f.getRoomsMax() != null && a.getRooms() > f.getRoomsMax()) return false;
 
         if (f.getComplex() != null && !f.getComplex().isBlank()) {
-            String want = f.getComplex().trim().toLowerCase(Locale.ROOT);
+            String want = f.getComplex()
+                    .replace('ё','е')
+                    .replace('Ё','Е')
+                    .trim().toLowerCase(Locale.ROOT);
             String have = a.getComplexName() != null ? a.getComplexName().toLowerCase(Locale.ROOT) : "";
             if (!have.contains(want)) return false;
         }

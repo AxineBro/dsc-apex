@@ -1,47 +1,47 @@
 [
   {
     "name": "Крымский квартал",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-krymskiy-kvartal/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/14f/5we3v9u26ikvq0gzo7cp3tt6fyny84uj/409_165_2/krymskiy.jpg",
     "district": "Советский"
   },
   {
     "name": "Европейский",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-evropeyskiy/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/31b/t42q8d4ce2485ruy185mfo93c85kus0n/409_165_2/evropeyskiy.jpg",
     "district": "Центральный"
   },
   {
     "name": "Городские истории",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-gorodskie-istorii/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/7b8/nkqahj7cp210fy38gqzdple95yhy9ing/409_165_2/gorodskie.jpg",
     "district": "Левобережный"
   },
   {
     "name": "Яблоневые сады",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-yablonevye-sady/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/a73/jz8527pqdw6kolp7zz540ftofg0c747a/409_165_2/yablonevye.jpg",
     "district": "Коминтерновский"
   },
   {
     "name": "Ленинградский квартал",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-leningradskiy-kvartal/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/adf/ehiqkp1wsf98515of5o0fnloxtmorx7u/409_165_2/leningradskiy.jpg",
     "district": "Левобережный"
   },
   {
     "name": "Парад Планет",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-parad-planet/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/2b1/82ry96a6bmnvt2j7fz0e7qb4xflr6nas/409_165_2/parad-planet.jpg",
     "district": "Центральный"
   },
   {
     "name": "Черёмушки",
-    "imageUrl": "https://dsk.vrn.ru/proekty/mikrorayon-cheremushki/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/027/96ywev38jkmh7qpkekvsv5t20pnpop8z/409_165_2/cheremushki.jpg",
     "district": "Отрадное"
   },
   {
     "name": "Ласточкино",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-lastochkino/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/5c2/ajslusih6zq47f1o4p1jniiqeuh2qpxo/409_165_2/lastochkino.jpg",
     "district": "Советский"
   },
   {
     "name": "Задонье",
-    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-zadone/",
+    "imageUrl": "https://dsk.vrn.ru/upload/resize_cache/iblock/297/c8nma1zj7wov2428vnuba408ww2jkuc0/409_165_2/zadone.jpg",
     "district": "Северный"
   }
 ]
