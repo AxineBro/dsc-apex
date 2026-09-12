@@ -279,8 +279,12 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
                     .replace('ё','е')
                     .replace('Ё','Е')
                     .trim().toLowerCase(Locale.ROOT);
-            String have = a.getComplexName() != null ? a.getComplexName().toLowerCase(Locale.ROOT) : "";
-            if (!have.contains(want)) return false;
+            String have = a.getComplexName() != null ? a.getComplexName()
+                    .replace('ё', 'е')
+                    .replace('Ё', 'Е')
+                    .trim()
+                    .toLowerCase(Locale.ROOT) : "";
+            return have.contains(want);
         }
         return true;
     }

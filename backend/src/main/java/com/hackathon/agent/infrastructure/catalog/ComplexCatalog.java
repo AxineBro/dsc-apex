@@ -3,7 +3,6 @@ package com.hackathon.agent.infrastructure.catalog;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackathon.agent.api.dto.response.ChatAttachment;
-import com.hackathon.agent.domain.exception.ApartmentNotFoundException;
 import com.hackathon.agent.domain.model.Apartment;
 import com.hackathon.agent.domain.model.Session;
 import com.hackathon.agent.domain.service.ApartmentSearchService;
@@ -19,7 +18,7 @@ import java.util.*;
 /**
  * Каталог жилых комплексов (ЖК), доступных для прикрепления к ответам бота.
  * <p>
- * Загружает справочник ЖК из JSON-файла на этапе инициализации бина и предоставляет
+ * Загружает справочник ЖК из JSON-файла на этапе инициализации Bean и предоставляет
  * метод {@link #attachmentsFor(Session)} для формирования списка вложений
  * (изображений ЖК) на основе ранжированного списка квартир текущей сессии.
  * Используется оркестратором {@code AgentOrchestrator} при сборке
@@ -42,15 +41,15 @@ import java.util.*;
  * <p><b>Формат файла справочника (JSON-массив):</b></p>
  * <pre>
  * [
- *   { "name": "Северный парк", "imageUrl": "https://.../north.jpg", "district": "САО" },
- *   { "name": "Западный луч",  "imageUrl": "https://.../west.jpg",  "district": "ЗАО" }
+ *   { "name": "Северный парк", "imageUrl": "{@code https://.../north.jpg}", "district": "САО" },
+ *   { "name": "Западный луч",  "imageUrl": "{@code https://.../west.jpg}",  "district": "ЗАО" }
  * ]
  * </pre>
  *
  * <p><b>Зависимости:</b></p>
  * <ul>
  *     <li>{@link ApartmentSearchService} — поиск квартиры по ID для определения ЖК.</li>
- *     <li>{@link ObjectMapper} — десериализация справочника из JSON.</li>
+ *     <li>{@link ObjectMapper} — де сериализация справочника из JSON.</li>
  * </ul>
  *
  * @author Axine
@@ -96,7 +95,7 @@ public class ComplexCatalog {
      * <p>
      * Ключ — результат {@link #norm(String)} от названия ЖК, значение — объект
      * {@link Complex}. Инициализируется в {@link #load()} и далее используется
-     * только для чтения (иммутабельная копия).
+     * только для чтения.
      * </p>
      * <p>
      * Если загрузка справочника не удалась, остаётся пустой картой, и метод
@@ -108,7 +107,7 @@ public class ComplexCatalog {
     /**
      * Загружает справочник ЖК из classpath-ресурса.
      * <p>
-     * Вызывается один раз после создания бина (аннотация {@link PostConstruct}).
+     * Вызывается один раз после создания Bean (аннотация {@link PostConstruct}).
      * Читает JSON-массив объектов {@link Complex}, строит индекс по нормализованному
      * названию и сохраняет его в {@link #byName}.
      * </p>
@@ -179,8 +178,8 @@ public class ComplexCatalog {
                     Complex c = byName.get(norm(a.getComplexName()));
                     if (c != null) uniq.putIfAbsent(c.name(), c);
                     if (uniq.size() >= 3) break;
-                } catch (ApartmentNotFoundException e){
-                    log.warn("Apartment id {} from rankedList not found, skipping", id);
+                } catch (Exception e){
+                    log.warn("Failed to load apartment id {} from rankedList, skipping: {}", id, e.getMessage());
                 }
             }
             return uniq.values().stream()
@@ -221,6 +220,6 @@ public class ComplexCatalog {
                 .replaceAll("[«»\"]", "")
                 .replace('ё','е')
                 .replace('Ё','Е')
-                .trim().toLowerCase(Locale.ROOT).trim().toLowerCase(Locale.ROOT);
+                .trim().toLowerCase(Locale.ROOT);
     }
 }
