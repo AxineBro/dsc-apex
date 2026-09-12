@@ -3,6 +3,7 @@ import ChatWindow from '../ChatWindow/ChatWindow';
 import ChatResizeButtons from '../ChatButtons/ChatResizeButtons';
 import './ChatLayout.css';
 import DskLogo from '../../assets/icons/dsk_logo_32x32.png';
+import type { ChatAttachment } from '../../api/chatApi';
 
 type ChatModes = 'closed' | 'floating' | 'full';
 
@@ -11,6 +12,7 @@ interface MessageInfo {
   text: string;
   messageType: 'user' | 'assistant' | 'sys-info' | 'error' | 'thinking';
   createdAt: number;
+  attachments?: ChatAttachment[];
 }
 
 interface StoredChatItem {
@@ -33,9 +35,10 @@ interface ChatProps {
   activeChatId: string | null;
   isLoading: boolean;
   isThinking: boolean;
+  thinkingLabel?: string | null;
 }
 
-function ChatLayout({ mode, onModeChange, onSendMessage, onEdit, onRegenerate, onNewChat, onSelectChat, onDeleteChat, messages, chats, activeChatId, isLoading, isThinking }: ChatProps) {
+function ChatLayout({ mode, onModeChange, onSendMessage, onEdit, onRegenerate, onNewChat, onSelectChat, onDeleteChat, messages, chats, activeChatId, isLoading, isThinking, thinkingLabel }: ChatProps) {
   if (mode === 'closed') return null;
 
   if (mode === 'full') {
@@ -46,7 +49,7 @@ function ChatLayout({ mode, onModeChange, onSendMessage, onEdit, onRegenerate, o
           <div className="floating-controls">
             <ChatResizeButtons onModeChange={onModeChange} mode={mode} />
           </div>
-          <ChatWindow mode={mode} messages={messages} isLoading={isLoading} isThinking={isThinking} onSendMessage={onSendMessage} onEdit={onEdit} onRegenerate={onRegenerate} />
+          <ChatWindow mode={mode} messages={messages} isLoading={isLoading} isThinking={isThinking} thinkingLabel={thinkingLabel} onSendMessage={onSendMessage} onEdit={onEdit} onRegenerate={onRegenerate} />
         </div>
       </div>
     );
@@ -65,7 +68,7 @@ function ChatLayout({ mode, onModeChange, onSendMessage, onEdit, onRegenerate, o
         <ChatResizeButtons onModeChange={onModeChange} mode={mode} />
       </div>
       <div className="chat-body">
-        <ChatWindow mode={mode} messages={messages} isLoading={isLoading} isThinking={isThinking} onSendMessage={onSendMessage} onEdit={onEdit} onRegenerate={onRegenerate} />
+        <ChatWindow mode={mode} messages={messages} isLoading={isLoading} isThinking={isThinking} thinkingLabel={thinkingLabel} onSendMessage={onSendMessage} onEdit={onEdit} onRegenerate={onRegenerate} />
       </div>
     </div>
   );

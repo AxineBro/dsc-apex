@@ -368,6 +368,108 @@
     text-decoration: underline;
 }
 
+.complex-images {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+}
+
+/* Фиксированный размер: flex: 0 0 auto запрещает растягиваться/сжиматься,
+   поэтому 1, 2 и 3 картинки всегда одинаковые; лишнее уходит в скролл. */
+.complex-image {
+    position: relative;
+    margin: 0;
+    flex: 0 0 auto;
+    width: 320px;
+    aspect-ratio: 16 / 10;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e8e0dd;
+    background: #ece3e0;
+    scroll-snap-align: start;
+}
+
+.complex-image img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.complex-image figcaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 20px 10px 8px;
+    background: linear-gradient(to top, rgba(10, 8, 6, 0.72), rgba(10, 8, 6, 0));
+    text-align: left;
+}
+
+.complex-name {
+    font-family: 'Montserrat', Inter, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1.25;
+    color: #fff;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.complex-sub {
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* сообщение с картинками — на всю ширину пузыря, иначе ряд сожмётся */
+.msg.assistant:has(.complex-images) {
+    width: 100%;
+}
+
+/* Единый размер везде (floating/full/мобила): ничего не переопределяем,
+   непоместившееся уходит в горизонтальный скролл. */
+
+.retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #eee;
+    background: #fff;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #7a4a0a;
+}
+
+.retry-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.retry-btn:hover {
+    border-color: #F1912B;
+}
+
 .chat-layout.full .msg {
     padding: 12px 14px;
     border-radius: 15px;

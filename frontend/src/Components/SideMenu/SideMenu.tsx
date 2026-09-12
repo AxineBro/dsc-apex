@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './SideMenu.css';
 import AddIcon from '../../assets/icons/add.svg?react';
 import SearchIcon from '../../assets/icons/search.svg?react';
@@ -46,6 +46,15 @@ function SideMenu({ isVisible, chats, activeChatId, onSelectChat, onDeleteChat, 
   });
   const [query, setQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
+  // Глушим transition'ы на первом монтировании: иначе при открытии full
+  // меню может "проехать" справа налево (анимация начальных стилей).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setMounted(true));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   if (!isVisible) return null;
 
@@ -55,7 +64,7 @@ function SideMenu({ isVisible, chats, activeChatId, onSelectChat, onDeleteChat, 
   const visible = showAll ? filtered : filtered.slice(0, 7);
 
   return (
-    <div className={'side-menu' + (collapsed ? ' collapsed' : '')}>
+    <div className={'side-menu' + (collapsed ? ' collapsed' : '') + (mounted ? '' : ' no-anim')}>
       <div className="side-top">
         <button
           type="button"
@@ -91,6 +100,7 @@ function SideMenu({ isVisible, chats, activeChatId, onSelectChat, onDeleteChat, 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Поиск по чатам"
+            aria-label="Поиск по чатам"
             tabIndex={collapsed ? -1 : 0}
           />
         </div>

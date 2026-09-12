@@ -17,7 +17,8 @@ function ChatOpenButton({ onModeChange }: ChatProps) {
         <>
             <button
                 className='chat-open-button'
-                onClick={open}>
+                onClick={open}
+                aria-label="Открыть чат консультанта ДСК">
                 <ChatIcon id='chat-icon'/>
             </button>
         </>

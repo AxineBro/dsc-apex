@@ -22,6 +22,10 @@
   transition: none;
 }
 
+.side-menu.no-anim .side-content {
+  transition: none;
+}
+
 .side-menu.collapsed {
   width: 68px;
   flex-basis: 68px;

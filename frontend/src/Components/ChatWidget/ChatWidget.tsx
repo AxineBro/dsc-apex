@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import ChatLayout from "../ChatLayout/ChatLayout";
 import ChatOpenButton from "../ChatButtons/ChatOpenButton";
-import { initSession, sendMessage, isManagerReply } from "../../api/chatApi";
+import { initSession, sendMessage, isManagerReply, type ChatAttachment } from "../../api/chatApi";
+import { thinkingLabelForState } from "../ThinkingIndicator/ThinkingIndicator";
 
 type ChatModes = 'closed' | 'floating' | 'full';
 
@@ -10,6 +11,7 @@ interface MessageInfo {
   text: string;
   messageType: 'user' | 'assistant' | 'sys-info' | 'error' | 'thinking';
   createdAt: number;
+  attachments?: ChatAttachment[];
 }
 
 interface StoredChat {
@@ -38,6 +40,17 @@ function makeTitle(text: string): string {
   return t.length > 32 ? t.slice(0, 32) + '…' : t;
 }
 
+/** Только complex_image, макс. 3 — остальное (plan_image и пр.) фронт игнорирует. */
+function pickComplexImages(list: ChatAttachment[] | undefined): ChatAttachment[] {
+  if (!Array.isArray(list)) return [];
+  return list.filter((a) => a && a.type === 'complex_image' && typeof a.url === 'string' && a.url.startsWith('http')).slice(0, 3);
+}
+
+/** Длинное КП и таблицы печатаем сразу — typewriter на них дёргается. */
+function shouldPrintInstantly(full: string): boolean {
+  return full.length > 800 || full.includes('|');
+}
+
 function trimMessages(msgs: MessageInfo[]): MessageInfo[] {
   if (msgs.length <= MAX_MSGS) return msgs;
   const welcome = msgs.find((m) => m.id === 'welcome');
@@ -62,6 +75,8 @@ function ChatWidget() {
   const [messages, setMessages] = useState<MessageInfo[]>([makeWelcome()]);
   const [chats, setChats] = useState<StoredChat[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Последний известный state бэка — по нему подпись думанья (SHOWING_LIST/OFFER_READY/TO_MANAGER).
+  const [lastBackendState, setLastBackendState] = useState<string | null>(null);
 
   const sidRef = useRef<string | null>(null);
   const messagesRef = useRef<MessageInfo[]>([]);
@@ -120,6 +135,15 @@ function ChatWidget() {
     window.parent.postMessage({ type: 'CHAT_MODE_CHANGE', mode }, '*');
   }, [mode]);
 
+  // Esc закрывает виджет из floating/full
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMode('closed');
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   async function ensureSid(): Promise<string> {
     if (sidRef.current) return sidRef.current;
     const sid = await initSession();
@@ -138,6 +162,7 @@ function ChatWidget() {
     setMessages([makeWelcome()]);
     clearSid();
     setIsThinking(false);
+    setLastBackendState(null);
   }
 
   // всегда новый чат при открытии из closed
@@ -190,10 +215,21 @@ function ChatWidget() {
     try { localStorage.setItem(ACTIVE_KEY, id); } catch { /* ignore */ }
   }
 
+  function setTextInstant(id: string, full: string) {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: full } : m)));
+    return Promise.resolve();
+  }
+
   function typewriter(id: string, full: string) {
     return new Promise<void>((resolve) => {
       if (!full) {
         setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: '' } : m)));
+        resolve();
+        return;
+      }
+      // КП и таблицы — сразу, без эффекта печати
+      if (shouldPrintInstantly(full)) {
+        setTextInstant(id, full);
         resolve();
         return;
       }
@@ -230,6 +266,7 @@ function ChatWidget() {
       const sid = await ensureSid();
       const res = await sendMessage(sid, userText);
       setIsThinking(false);
+      if (res.state) setLastBackendState(res.state);
 
       if (res.sessionId && res.sessionId !== sid) {
         sidRef.current = res.sessionId;
@@ -237,10 +274,18 @@ function ChatWidget() {
       }
       const finalSid = sidRef.current;
 
+      // Картинки ЖК — на сообщение ассистента (неизвестные типы уже отрезаны)
+      const imgs = pickComplexImages(res.attachments);
+      if (imgs.length) {
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, attachments: imgs } : m)));
+      }
+
       await typewriter(assistantId, res.reply);
 
+      // Флаг бэка — основной путь; эвристика по тексту — только fallback для старого бэка
+      const transferred = res.transferredToManager === true || (res.transferredToManager == null && isManagerReply(res.reply));
       let withSys = messagesRef.current;
-      if (isManagerReply(res.reply)) {
+      if (transferred) {
         const sys: MessageInfo = { id: crypto.randomUUID(), text: 'Диалог передан менеджеру. Специалист свяжется с вами.', messageType: 'sys-info', createdAt: Date.now() };
         withSys = [...messagesRef.current, sys];
         setMessages(withSys);
@@ -250,10 +295,10 @@ function ChatWidget() {
 
       if (wasDraft) {
         createStoredChatFromDraft(finalTrimmed, finalSid ?? sid, userText);
-        if (isManagerReply(res.reply)) clearSid();
+        if (transferred) clearSid();
       } else {
         syncActiveToStore(finalTrimmed, finalSid, userText);
-        if (isManagerReply(res.reply)) clearSid();
+        if (transferred) clearSid();
       }
     } catch (e: any) {
       setIsThinking(false);
@@ -360,6 +405,7 @@ function ChatWidget() {
     setActiveId(null);
     setMessages([makeWelcome()]);
     clearSid();
+    setLastBackendState(null);
   }
 
   return (
@@ -373,6 +419,7 @@ function ChatWidget() {
           activeChatId={activeId}
           isLoading={isLoading}
           isThinking={isThinking}
+          thinkingLabel={thinkingLabelForState(lastBackendState)}
           onSendMessage={handleSend}
           onEdit={handleEdit}
           onRegenerate={handleRegenerate}

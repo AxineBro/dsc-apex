@@ -23,10 +23,19 @@ const STEPS = [
   { text: 'Формирую ответ…', Icon: HouseIcon },
 ];
 
-function ThinkingIndicator() {
+/** Подпись думанья по последнему известному state бэка (дешёвая замена оповещениям о tool calling). */
+export function thinkingLabelForState(state: string | null | undefined): string | null {
+  if (state === 'SHOWING_LIST') return 'Подбираю варианты…';
+  if (state === 'OFFER_READY') return 'Формирую предложение…';
+  if (state === 'TO_MANAGER') return 'Соединяю с менеджером…';
+  return null;
+}
+
+function ThinkingIndicator({ label }: { label?: string | null }) {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
+    if (label) return; // статичная state-подпись — ротация не нужна
     let alive = true;
     let t: ReturnType<typeof setTimeout>;
     function tick() {
@@ -42,12 +51,23 @@ function ThinkingIndicator() {
       tick();
     }, 4500 + Math.random() * 1000);
     return () => { alive = false; clearTimeout(t); };
-  }, []);
+  }, [label]);
+
+  if (label) {
+    const { Icon } = STEPS[2];
+    return (
+      <div className="thinking-plain" role="status" aria-live="polite">
+        <span className="ti-dots"><span /><span /><span /></span>
+        <span className="ti-icon"><Icon /></span>
+        <span className="ti-text">{label}</span>
+      </div>
+    );
+  }
 
   const { text, Icon } = STEPS[idx];
 
   return (
-    <div className="thinking-plain">
+    <div className="thinking-plain" role="status" aria-live="polite">
       <span className="ti-dots"><span /><span /><span /></span>
       <span className="ti-icon"><Icon /></span>
       <span className="ti-text" key={idx}>{text}</span>

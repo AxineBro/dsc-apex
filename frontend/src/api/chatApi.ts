@@ -3,9 +3,23 @@
 // prod: :80/api   -> nginx -> backend:8080
 const API_BASE = '';
 
+export interface ChatAttachment {
+  type: string;
+  url: string;
+  title?: string;
+}
+
 export interface ChatOk {
   reply: string;
   sessionId: string;
+  /** Текущий SessionState строкой: NEW/AWAITING_INPUT/SHOWING_LIST/OFFER_READY/TO_MANAGER/FINISHED. */
+  state?: string;
+  /** true только в том ответе, где произошёл перевод менеджеру. */
+  transferredToManager?: boolean;
+  /** Код причины перевода: user_requested/booked/no_options/... */
+  managerReason?: string | null;
+  /** Вложения (complex_image — картинки ЖК, макс. 3). */
+  attachments?: ChatAttachment[];
 }
 
 export interface ChatApiError {
@@ -51,10 +65,18 @@ export async function sendMessage(sessionId: string | null, message: string): Pr
   }
 
   const j = await r.json();
-  return { reply: j.reply ?? '', sessionId: j.sessionId };
+  return {
+    reply: j.reply ?? '',
+    sessionId: j.sessionId,
+    state: j.state,
+    transferredToManager: j.transferredToManager,
+    managerReason: j.managerReason,
+    attachments: Array.isArray(j.attachments) ? j.attachments : [],
+  };
 }
 
-// Эвристика менеджера: отдельного флага нет, ловим по тексту
+// Fallback-эвристика менеджера для старых версий бэка без флага.
+// Основной путь — res.transferredToManager, это только запасной.
 export function isManagerReply(reply: string): boolean {
   const s = reply.toLowerCase();
   return (

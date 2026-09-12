@@ -2,12 +2,14 @@ import MessagesHistory from '../MessagesHistory/MessagesHistory';
 import PromptInputField from '../PromptInputField/PromptInputField';
 import Suggestions from '../Suggestions/Suggestions';
 import './ChatWindow.css';
+import type { ChatAttachment } from '../../api/chatApi';
 
 interface MessageInfo {
   id: string;
   text: string;
   messageType: 'user' | 'assistant' | 'sys-info' | 'error' | 'thinking';
   createdAt: number;
+  attachments?: ChatAttachment[];
 }
 
 interface ChatWindowProps {
@@ -18,9 +20,10 @@ interface ChatWindowProps {
   messages: MessageInfo[];
   isLoading: boolean;
   isThinking: boolean;
+  thinkingLabel?: string | null;
 }
 
-function ChatWindow({ mode, onSendMessage, onEdit, onRegenerate, messages, isLoading, isThinking }: ChatWindowProps) {
+function ChatWindow({ mode, onSendMessage, onEdit, onRegenerate, messages, isLoading, isThinking, thinkingLabel }: ChatWindowProps) {
   // новый чат = только welcome, без юзера
   const isNew = messages.length <= 1;
 
@@ -39,7 +42,7 @@ function ChatWindow({ mode, onSendMessage, onEdit, onRegenerate, messages, isLoa
 
   return (
     <div className="chat-window">
-      <MessagesHistory mode={mode} messages={messages} isLoading={isLoading} isThinking={isThinking} onSendMessage={onSendMessage} onEdit={onEdit} onRegenerate={onRegenerate} />
+      <MessagesHistory mode={mode} messages={messages} isLoading={isLoading} isThinking={isThinking} thinkingLabel={thinkingLabel} onSendMessage={onSendMessage} onEdit={onEdit} onRegenerate={onRegenerate} />
       <PromptInputField variant={mode} disabled={isLoading} onSendMessage={onSendMessage} />
     </div>
   );

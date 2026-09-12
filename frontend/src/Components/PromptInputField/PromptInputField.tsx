@@ -31,6 +31,19 @@ function PromptInputField({ onSendMessage, variant = 'floating', disabled = fals
         autoGrow();
     }, [inputText, variant]);
 
+    // Фокус в инпут при открытии чата и после ответа (доступность)
+    const wasDisabled = useRef(disabled);
+    useEffect(() => {
+        if (wasDisabled.current && !disabled) {
+            taRef.current?.focus();
+        }
+        wasDisabled.current = disabled;
+    }, [disabled]);
+
+    useEffect(() => {
+        taRef.current?.focus();
+    }, [variant]);
+
     function send() {
         if (disabled) return;
         if (!inputText.trim()) return;
