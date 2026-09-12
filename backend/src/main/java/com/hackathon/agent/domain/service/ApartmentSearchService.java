@@ -157,5 +157,41 @@ public interface ApartmentSearchService {
      */
     Apartment getById(Long id);
 
+    /**
+     * Возвращает количество забронированных квартир, удовлетворяющих заданным фильтрам.
+     * <p>
+     * Используется для оценки текущего спроса и доступности вариантов: например,
+     * чтобы понять, сколько похожих квартир уже забронировано, прежде чем предлагать
+     * клиенту новые варианты или переходить к расширенному поиску
+     * ({@link #expandSearch(Filters)}).
+     * </p>
+     *
+     * <p><b>Особенности подсчёта:</b></p>
+     * <ul>
+     *     <li>Учитываются только квартиры со статусом «забронировано».</li>
+     *     <li>Фильтры применяются по тем же правилам, что и в {@link #findApartments}.</li>
+     *     <li>Если {@code filters} пуст (все поля {@code null}), возвращается
+     *         общее количество забронированных квартир.</li>
+     * </ul>
+     *
+     * <p><b>Пример:</b></p>
+     * <pre>
+     * Filters filters = new Filters();
+     * filters.setRoomsMin(2);
+     * filters.setPriceMax(BigDecimal.valueOf(8000000));
+     * int booked = searchService.countBookedMatches(filters);
+     * if (booked > 10) {
+     *     // спрос высокий — расширяем критерии поиска
+     * }
+     * </pre>
+     *
+     * @param filters фильтры поиска (не {@code null}; пустые поля игнорируются)
+     * @return количество забронированных квартир, соответствующих фильтрам
+     *         (может быть {@code 0}, но не отрицательным)
+     * @throws InvalidFiltersException если фильтры содержат некорректные
+     *         значения (например, {@code priceMin > priceMax})
+     * @see #findApartments(Filters)
+     * @see #expandSearch(Filters)
+     */
     int countBookedMatches(Filters filters);
 }

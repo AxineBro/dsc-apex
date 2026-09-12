@@ -57,24 +57,32 @@ import org.springframework.context.annotation.Configuration;
 public class JacksonConfig {
 
     /**
-     * Создаёт экземпляр {@link ObjectMapper} с настройками по умолчанию.
+     * Создаёт и настраивает экземпляр {@link ObjectMapper}.
      * <p>
-     * В текущей реализации возвращается новый объект со стандартной конфигурацией.
-     * Для более сложных требований можно дополнить метод регистрацией модулей
-     * (например, для работы с Java 8 Date/Time API) или настройкой сериализации.
+     * <b>Текущая конфигурация:</b>
+     * <ul>
+     *     <li>Зарегистрирован модуль {@link JavaTimeModule} — обеспечивает корректную
+     *         сериализацию/десериализацию классов Java 8 Date/Time API
+     *         ({@link java.time.LocalDateTime}, {@link java.time.LocalDate} и др.).</li>
+     *     <li>Отключён {@link SerializationFeature#WRITE_DATES_AS_TIMESTAMPS} —
+     *         даты сериализуются в ISO-8601 (например, {@code "2025-01-15T10:30:00"}),
+     *         а не в виде числовых массивов.</li>
+     * </ul>
      * </p>
      *
-     * <p><b>Пример расширенной настройки:</b></p>
+     * <p><b>Возможные расширения:</b></p>
+     * <p>
+     * При необходимости метод можно дополнить, например, отключением ошибок
+     * на неизвестные поля:
+     * </p>
      * <pre>
-     * ObjectMapper mapper = new ObjectMapper();
-     * mapper.registerModule(new JavaTimeModule());
-     * mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
      * mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-     * return mapper;
      * </pre>
      *
      * @return сконфигурированный экземпляр {@link ObjectMapper}
-     * @see ObjectMapper#ObjectMapper()
+     * @see ObjectMapper
+     * @see JavaTimeModule
+     * @see SerializationFeature#WRITE_DATES_AS_TIMESTAMPS
      */
     @Bean
     public ObjectMapper objectMapper() {

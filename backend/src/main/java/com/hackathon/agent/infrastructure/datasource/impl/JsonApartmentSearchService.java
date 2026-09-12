@@ -42,8 +42,8 @@ import java.util.stream.Collectors;
  *         {@code "свободна"} (регистр важен).</li>
  *     <li>Метод {@link #expandSearch} расширяет диапазоны фильтров на фиксированные
  *         проценты/значения и выполняет повторный поиск.</li>
- *     <li>Метод {@link #getById} возвращает {@code null}, если квартира с указанным ID
- *         не найдена (вместо выбрасывания исключения).</li>
+ *     <li>Метод {@link #getById} выбрасывает {@link ApartmentNotFoundException},
+ *         если квартира с указанным ID не найдена.</li>
  * </ul>
  *
  * <p><b>Обработка ошибок:</b></p>
@@ -220,13 +220,15 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
      * {@inheritDoc}
      * <p>
      * Реализация выполняет поиск по идентификатору в загруженном списке квартир.
-     * При отсутствии квартиры с указанным ID возвращает {@code null} вместо
-     * выбрасывания исключения. Это поведение отличается от типичного для продакшена,
-     * но допустимо для упрощённой реализации (заглушки).
+     * При отсутствии квартиры с указанным ID выбрасывается {@link ApartmentNotFoundException},
+     * что соответствует контракту {@link ApartmentSearchService#getById(Long)}.
+     * Это гарантирует, что вызывающий код всегда получает валидный объект
+     * либо обрабатывает исключение.
      * </p>
      *
      * @param id уникальный идентификатор квартиры (не {@code null})
-     * @return объект {@link Apartment} или {@code null}, если квартира не найдена
+     * @return объект {@link Apartment} с полной информацией
+     * @throws ApartmentNotFoundException если квартира с указанным ID не найдена
      */
     @Override
     public Apartment getById(Long id) {

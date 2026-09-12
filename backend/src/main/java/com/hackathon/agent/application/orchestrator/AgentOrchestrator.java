@@ -130,6 +130,33 @@ public class AgentOrchestrator {
     @Value("${app.logging.slow-threshold-ms}")
     private long slowThresholdMs;
 
+    /**
+     * Обрабатывает сообщение и возвращает расширенный результат: ответ бота,
+     * статус сессии, признак перевода на менеджера, причину перевода и вложения.
+     * <p>
+     * Обёртка над {@link #process(Session, String)}: делегирует основную обработку,
+     * а затем собирает {@link ProcessResult}. Если сессия была переведена на менеджера
+     * (статус {@link SessionState#TO_MANAGER}), извлекает причину перевода через
+     * {@link GigaChatTools#drainLastTransferReason()} (при отсутствии — {@code "unknown"})
+     * и прикладывает вложения из {@link ComplexCatalog#attachmentsFor(Session)}.
+     * </p>
+     *
+     * <p><b>Особенности:</b></p>
+     * <ul>
+     *     <li>Выполняется в транзакции ({@code @Transactional}).</li>
+     *     <li>В блоке {@code finally} сбрасывает «повисшую» причину перевода,
+     *         если сессия не находится в статусе {@code TO_MANAGER}.</li>
+     *     <li>Не пробрасывает исключения — {@link #process} обрабатывает их
+     *         самостоятельно и возвращает fallback-ответ.</li>
+     * </ul>
+     *
+     * @param session     объект сессии (не {@code null}).
+     * @param userMessage текст сообщения пользователя (не {@code null}, не пустой).
+     * @return {@link ProcessResult} с ответом бота и метаданными; никогда не {@code null}.
+     * @see #process(Session, String)
+     * @see ProcessResult
+     * @see ChatFacade#processMessageRich(String, String)
+     */
     @Transactional
     public ProcessResult processRich(Session session, String userMessage) {
         String reply;

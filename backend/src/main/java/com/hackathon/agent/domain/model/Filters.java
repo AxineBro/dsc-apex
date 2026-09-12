@@ -1,6 +1,7 @@
 package com.hackathon.agent.domain.model;
 
 import com.hackathon.agent.domain.exception.InvalidFiltersException;
+import com.hackathon.agent.infrastructure.catalog.ComplexCatalog;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -144,6 +145,20 @@ public class Filters {
      */
     private Integer roomsMax;
 
+    /**
+     * Название или идентификатор жилого комплекса, к которому относится квартира.
+     * <p>
+     * Используется для фильтрации и группировки квартир в каталоге
+     * ({@link ComplexCatalog}). Значение может быть {@code null}, если квартира
+     * не привязана к конкретному ЖК или информация ещё не заполнена.
+     * </p>
+     * <p>
+     * <b>Пример:</b> {@code complex = "Северный парк"} — квартира относится
+     * к жилому комплексу «Северный парк».
+     * </p>
+     *
+     * @see ComplexCatalog
+     */
     private String complex;
 
     /**

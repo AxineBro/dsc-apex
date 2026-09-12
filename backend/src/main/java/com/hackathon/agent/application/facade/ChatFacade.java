@@ -134,6 +134,24 @@ public class ChatFacade {
         }
     }
 
+    /**
+     * Обрабатывает сообщение и возвращает расширенный результат: ответ бота,
+     * состояние сессии, признак перевода на менеджера, причину и вложения.
+     * <p>
+     * «Обогащённая» версия {@link #processMessage(String, String)}: возвращает
+     * {@link ProcessResult} вместо {@code String}. Логирование и сохранение сессии
+     * выполняются на уровне контроллера/оркестратора.
+     * </p>
+     *
+     * @param sessionKey  идентификатор сессии (заголовок {@code X-Session-Id}),
+     *                    не {@code null} и не пустой.
+     * @param userMessage текст сообщения пользователя, не {@code null} и не пустой.
+     * @return {@link ProcessResult} с ответом бота и метаданными; никогда не {@code null}.
+     * @throws RuntimeException при ошибке получения сессии или обработки оркестратором.
+     * @see ProcessResult
+     * @see AgentOrchestrator#processRich(Session, String)
+     * @see ChatController#sendMessage
+     */
     public ProcessResult processMessageRich(String sessionKey, String userMessage) {
         Session session = sessionManager.getOrCreate(sessionKey);
         return orchestrator.processRich(session, userMessage);

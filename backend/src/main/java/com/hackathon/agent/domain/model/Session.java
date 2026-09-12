@@ -194,11 +194,17 @@ public class Session {
     private Integer floor;
 
     /**
-     * Счётчик обработанных циклов диалога.
+     * Счётчик количества «перезапусков» поиска в рамках сессии.
      * <p>
-     * Используется для контроля количества итераций в {@link AgentOrchestrator}
-     * и предотвращения бесконечных циклов. Инкрементируется при каждом вызове
-     * обработки.
+     * Инкрементируется в {@link com.hackathon.agent.infrastructure.persistence.impl.SessionManagerImpl#updateFilters}
+     * <b>только</b> при изменении критических фильтров: {@code areaMin}, {@code areaMax},
+     * {@code priceMin}, {@code priceMax}. Изменение количества комнат или этажа
+     * <b>не</b> увеличивает счётчик.
+     * </p>
+     * <p>
+     * Используется для ограничения количества попыток подбора: при достижении лимита
+     * {@code app.max.cycles} (см. {@link com.hackathon.agent.infrastructure.ai.tools.GigaChatTools#searchApartments})
+     * диалог передаётся менеджеру.
      * </p>
      */
     private Integer counter;
