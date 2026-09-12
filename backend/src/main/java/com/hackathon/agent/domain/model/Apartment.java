@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
  * Модель данных, представляющая информацию о квартире из внешней ERP-системы.
  * <p>

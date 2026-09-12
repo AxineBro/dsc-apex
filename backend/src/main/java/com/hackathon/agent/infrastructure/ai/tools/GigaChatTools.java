@@ -1,5 +1,6 @@
 package com.hackathon.agent.infrastructure.ai.tools;
 
+import com.hackathon.agent.api.dto.response.ChatResponse;
 import com.hackathon.agent.application.orchestrator.AgentOrchestrator;
 import com.hackathon.agent.application.orchestrator.SessionManager;
 import com.hackathon.agent.domain.exception.ApartmentNotFoundException;
@@ -96,6 +97,32 @@ public class GigaChatTools {
     private int FLAT_LIMIT;
 
     /**
+     * Причина последней передачи диалога менеджеру в текущем потоке (запросе).
+     * <p>
+     * Позволяет передать причину из глубины бизнес-логики (где вызывается
+     * {@code transferToManager}) наверх — в слой API, где она попадает
+     * в {@link ChatResponse}, без «протаскивания» через сигнатуры методов.
+     * </p>
+     * <p>
+     * {@link ThreadLocal} обеспечивает изоляцию между параллельными запросами.
+     * Устанавливается через {@link ThreadLocal#set(Object)} в момент передачи менеджеру,
+     * читается при сборке {@link ChatResponse}. <b>Обязательно</b> очищать
+     * через {@link ThreadLocal#remove()} по завершении обработки запроса
+     * (в {@code finally}-блоке), иначе значение протечёт в следующий запрос из пула потоков.
+     * </p>
+     * <p>
+     * Если не был установлен — {@link ThreadLocal#get()} вернёт {@code null},
+     * и {@link ChatResponse} останется {@code null}.
+     * </p>
+     */
+    private final ThreadLocal<String> lastTransferReason = new ThreadLocal<>();
+
+    private static String maskPhone(String p) {
+        if (p == null || p.length() < 4) return "не указан";
+        return "***" + p.substring(p.length() - 4);
+    }
+
+    /**
      * Выполняет поиск квартир по заданным параметрам фильтрации.
      * <p>
      * Инструмент для AI-агента. Используется для получения списка доступных квартир
@@ -147,10 +174,11 @@ public class GigaChatTools {
             @ToolParam(description = "Минимальная цена в рублях (BigDecimal)") BigDecimal priceMin,
             @ToolParam(description = "Максимальная цена в рублях (BigDecimal)") BigDecimal priceMax,
             @ToolParam(description = "Минимальное количество комнат (Integer)") Integer roomsMin,
-            @ToolParam(description = "Максимальное количество комнат (Integer)") Integer roomsMax
+            @ToolParam(description = "Максимальное количество комнат (Integer)") Integer roomsMax,
+            @ToolParam(description = "ЖК, подстрока названия, например 'Ласточкино'") String complex
     ) {
-        log.info("Tool searchApartments called: areaMin={}, areaMax={}, floor={}, priceMin={}, priceMax={}, roomsMin={}, roomsMax={}",
-                areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax);
+        log.info("Tool searchApartments called: areaMin={}, areaMax={}, floor={}, priceMin={}, priceMax={}, roomsMin={}, roomsMax={}, complex={}",
+                areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax, complex);
 
         Session session = sessionManager.getCurrentSession();
         if (session == null) {
@@ -171,7 +199,7 @@ public class GigaChatTools {
                 roomsMax = null;
             }
 
-            Filters filters = new Filters(areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax);
+            Filters filters = new Filters(areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax, complex);
             log.debug("Фильтры для поиска: {}", filters);
 
             sessionManager.updateFilters(session, filters);
@@ -205,6 +233,60 @@ public class GigaChatTools {
             long duration = System.currentTimeMillis() - startTime;
             log.error("Ошибка в searchApartments: duration={}ms, error={}", duration, e.getMessage(), e);
             return List.of();
+        }
+    }
+
+    @Tool(description = """
+    Сколько квартир подходит под те же фильтры, но уже забронировано/продано (не свободно).
+    Вызывай, когда searchApartments вернул пусто: если bookedCount > 0 — скажи клиенту
+    «по вашим критериям есть N забронированных, могу передать менеджеру для уточнения» и при согласии вызови transferToManager с reason="booked".
+    Все параметры как у searchApartments, null = без фильтра.
+    """)
+    public int countBookedMatches(
+            @ToolParam(description = "Минимальная площадь") BigDecimal areaMin,
+            @ToolParam(description = "Максимальная площадь") BigDecimal areaMax,
+            @ToolParam(description = "Этаж") Integer floor,
+            @ToolParam(description = "Минимальная цена") BigDecimal priceMin,
+            @ToolParam(description = "Максимальная цена") BigDecimal priceMax,
+            @ToolParam(description = "Комнат мин") Integer roomsMin,
+            @ToolParam(description = "Комнат макс") Integer roomsMax,
+            @ToolParam(description = "ЖК, подстрока названия") String complex
+    ) {
+        log.info("Tool countBookedMatches called: areaMin={}, areaMax={}, floor={}, priceMin={}, priceMax={}, roomsMin={}, roomsMax={}, complex={}",
+                areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax, complex);
+
+        Session session = sessionManager.getCurrentSession();
+        if (session == null) {
+            log.warn("Текущая сессия не найдена в ThreadLocal, подсчёт забронированных невозможен");
+            return 0;
+        }
+        MDC.put("sessionId", session.getSessionKey());
+
+        long startTime = System.currentTimeMillis();
+        try {
+            if (floor != null && floor <= 0) {
+                floor = null;
+            }
+            if (roomsMin != null && roomsMin <= 0) {
+                roomsMin = null;
+            }
+            if (roomsMax != null && roomsMax <= 0) {
+                roomsMax = null;
+            }
+
+            Filters filters = new Filters(areaMin, areaMax, floor, priceMin, priceMax, roomsMin, roomsMax, complex);
+            log.debug("Фильтры для подсчёта забронированных: {}", filters);
+
+            int count = searchService.countBookedMatches(filters);
+
+            long duration = System.currentTimeMillis() - startTime;
+            log.info("countBookedMatches завершён: найдено {} забронированных/проданных, duration={}ms", count, duration);
+
+            return count;
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("Ошибка в countBookedMatches: duration={}ms, error={}", duration, e.getMessage(), e);
+            return 0;
         }
     }
 
@@ -371,7 +453,7 @@ public class GigaChatTools {
             @ToolParam(description = "Причина перевода (одна из перечисленных выше)") String reason,
             @ToolParam(description = "Телефон клиента (опционально, но желательно)") String phone
     ) {
-        log.info("Tool transferToManager called: reason={}, phone={}", reason, phone);
+        log.info("Tool transferToManager called: reason={}, phone={}", reason, maskPhone(phone));
         Session session = sessionManager.getCurrentSession();
         if (session == null) {
             log.warn("Текущая сессия не найдена для перевода на менеджера");
@@ -381,15 +463,17 @@ public class GigaChatTools {
 
         if (phone == null || phone.isBlank()) {
             phone = session.getClientPhone();
-            log.info("Номер телефона не был передан, данные взяты из сессии. Сессия: {}, загруженный номер: {}", session.getSessionKey(), phone);
+            log.info("Номер телефона не был передан, данные взяты из сессии. Сессия: {}, загруженный номер: {}", session.getSessionKey(), maskPhone(phone));
         }
         try {
+            lastTransferReason.set(reason);
             notificationService.notifyManager(session, reason, phone);
             session.setStatus(SessionState.TO_MANAGER);
             sessionManager.save(session);
             log.info("Диалог переведён на менеджера. Сессия: {}, причина: {}", session.getSessionKey(), reason);
             return "ok";
         } catch (Exception e) {
+            lastTransferReason.remove();
             log.error("Ошибка при переводе на менеджера для сессии {}: {}", session.getSessionKey(), e.getMessage(), e);
             return "ok";
         }
@@ -617,8 +701,52 @@ public class GigaChatTools {
     ) {
         Session session = sessionManager.getCurrentSession();
         if (session == null) return "Ошибка сессии";
-        session.setClientPhone(phone);
+        String normalized = normalizeRuPhone(phone);
+        if (normalized == null) {
+            return "Не смог распознать номер. Попросите клиента прислать номер в формате +7XXXXXXXXXX.";
+        }
+        session.setClientPhone(normalized);
         sessionManager.save(session);
         return "Номер сохранён. Спасибо!";
     }
+
+    /**
+     * Забирает и очищает причину последней передачи диалога менеджеру для текущего потока.
+     * <p>
+     * Возвращает значение {@link #lastTransferReason}, после чего удаляет его
+     * через {@link ThreadLocal#remove()}. Совмещение «чтения» и «очистки» в одном методе
+     * гарантирует, что причина не «протечёт» в следующий запрос, обработанный тем же
+     * потоком из пула.
+     * </p>
+     * <p>
+     * Вызывается один раз по завершении обработки запроса — при формировании
+     * {@link ChatResponse}
+     * </p>
+     *
+     * @return причина передачи менеджеру (например, {@code "user_request"},
+     *         {@code "low_confidence"}), либо {@code null}, если в текущем
+     *         потоке передачи менеджеру не было
+     * @see #lastTransferReason
+     * @see ChatResponse
+     */
+    public String drainLastTransferReason() {
+        String r = lastTransferReason.get();
+        lastTransferReason.remove();
+        return r;
+    }
+
+    private static String normalizeRuPhone(String raw) {
+        if (raw == null) return null;
+        String digits = raw.replaceAll("[^0-9]", "");
+        if (digits.length() == 11 && (digits.startsWith("8") || digits.startsWith("7"))) {
+            digits = "7" + digits.substring(1);
+        } else if (digits.length() == 10) {
+            digits = "7" + digits;
+        } else {
+            return null;
+        }
+        if (!digits.matches("7\\d{10}")) return null;
+        return "+" + digits;
+    }
+
 }

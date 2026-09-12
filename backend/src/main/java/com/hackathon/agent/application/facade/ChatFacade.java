@@ -1,6 +1,7 @@
 package com.hackathon.agent.application.facade;
 
 import com.hackathon.agent.api.controller.ChatController;
+import com.hackathon.agent.application.dto.ProcessResult;
 import com.hackathon.agent.application.orchestrator.AgentOrchestrator;
 import com.hackathon.agent.application.orchestrator.SessionManager;
 import com.hackathon.agent.domain.model.Session;
@@ -131,5 +132,10 @@ public class ChatFacade {
                     sessionKey, duration, e.getMessage(), e);
             throw e;
         }
+    }
+
+    public ProcessResult processMessageRich(String sessionKey, String userMessage) {
+        Session session = sessionManager.getOrCreate(sessionKey);
+        return orchestrator.processRich(session, userMessage);
     }
 }

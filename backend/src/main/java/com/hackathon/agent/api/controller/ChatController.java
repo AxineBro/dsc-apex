@@ -102,7 +102,8 @@ public class ChatController {
 
             log.debug("Получено сообщение от сессии {}: {}", sessionId, request.getMessage());
 
-            String reply = chatFacade.processMessage(sessionId, request.getMessage());
+            var result = chatFacade.processMessageRich(sessionId, request.getMessage());
+            String reply = result.reply();
 
             long duration = System.currentTimeMillis() - startTime;
             log.info("Request processed successfully: sessionId={}, duration={}ms, replyLength={}",
@@ -112,7 +113,14 @@ public class ChatController {
                 log.debug("Reply content: {}", reply);
             }
 
-            return ResponseEntity.ok(new ChatResponse(reply, sessionId));
+            return ResponseEntity.ok(new ChatResponse(
+                    reply,
+                    sessionId,
+                    result.state() != null ? result.state().getCode() : null,
+                    result.transferredToManager(),
+                    result.managerReason(),
+                    result.attachments() != null ? result.attachments() : java.util.List.of()
+            ));
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - startTime;
             log.error("Error processing request: sessionId={}, duration={}ms, error={}",

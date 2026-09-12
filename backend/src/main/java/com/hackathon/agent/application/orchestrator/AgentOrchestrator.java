@@ -1,11 +1,14 @@
 package com.hackathon.agent.application.orchestrator;
 
+import com.hackathon.agent.application.dto.ProcessResult;
 import com.hackathon.agent.application.facade.ChatFacade;
 import com.hackathon.agent.domain.model.Session;
 import com.hackathon.agent.domain.model.SessionState;
 import com.hackathon.agent.infrastructure.ai.GigaChatClient;
 import com.hackathon.agent.infrastructure.ai.prompt.SystemPromptProvider;
 import com.hackathon.agent.infrastructure.ai.tools.GigaChatTools;
+import com.hackathon.agent.infrastructure.catalog.ComplexCatalog;
+import com.hackathon.agent.api.dto.response.ChatAttachment;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +16,8 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Оркестратор агентов, отвечающий за обработку входящих сообщений пользователя
@@ -104,6 +109,7 @@ public class AgentOrchestrator {
     private final SystemPromptProvider promptProvider;
     private final GigaChatTools tools;
     private final SessionManager sessionManager;
+    private final ComplexCatalog complexCatalog;
 
     /**
      * Пороговое значение времени выполнения (в миллисекундах) для вызова GigaChat,
@@ -123,6 +129,28 @@ public class AgentOrchestrator {
      */
     @Value("${app.logging.slow-threshold-ms}")
     private long slowThresholdMs;
+
+    @Transactional
+    public ProcessResult processRich(Session session, String userMessage) {
+        String reply;
+        try {
+            reply = process(session, userMessage);
+        } finally {
+            if (session != null && session.getStatus() != SessionState.TO_MANAGER) {
+                tools.drainLastTransferReason();
+            }
+        }
+
+        boolean transferred = session.getStatus() == SessionState.TO_MANAGER;
+        String reason = null;
+        if (transferred) {
+            reason = tools.drainLastTransferReason();
+            if (reason == null) reason = "unknown";
+        }
+        return new ProcessResult(reply, session.getStatus(), transferred, reason, complexCatalog.attachmentsFor(session));
+    }
+
+
     /**
      * Обрабатывает сообщение пользователя в контексте сессии.
      * <p>

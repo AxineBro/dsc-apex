@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -147,14 +148,15 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
         log.debug("Searching apartments with filters: {}", filters);
 
         if (log.isDebugEnabled()) {
-            log.debug("Filters: areaMin={}, areaMax={}, priceMin={}, priceMax={}, roomsMin={}, roomsMax={}, floor={}",
+            log.debug("Filters: areaMin={}, areaMax={}, priceMin={}, priceMax={}, roomsMin={}, roomsMax={}, floor={}, complex={}",
                     filters != null ? filters.getAreaMin() : null,
                     filters != null ? filters.getAreaMax() : null,
                     filters != null ? filters.getPriceMin() : null,
                     filters != null ? filters.getPriceMax() : null,
                     filters != null ? filters.getRoomsMin() : null,
                     filters != null ? filters.getRoomsMax() : null,
-                    filters != null ? filters.getFloor() : null);
+                    filters != null ? filters.getFloor() : null,
+                    filters != null ? filters.getComplex() : null);
         }
         List<Apartment> result = apartments.stream()
                 .filter(a -> "свободна".equals(a.getStatus()))
@@ -198,7 +200,8 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
                 filters.getPriceMin() != null ? filters.getPriceMin().multiply(BigDecimal.valueOf(0.9)) : null,
                 filters.getPriceMax() != null ? filters.getPriceMax().multiply(BigDecimal.valueOf(1.1)) : null,
                 filters.getRoomsMin() != null ? filters.getRoomsMin() - 1 : null,
-                filters.getRoomsMax() != null ? filters.getRoomsMax() + 1 : null
+                filters.getRoomsMax() != null ? filters.getRoomsMax() + 1 : null,
+                filters.getComplex()
         );
 
         log.debug("Expanded filters: areaMin={}, areaMax={}, priceMin={}, priceMax={}, roomsMin={}, roomsMax={}, floor={}",
@@ -237,6 +240,15 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
                 });
     }
 
+    @Override
+    public int countBookedMatches(Filters filters) {
+        if (apartments == null) return 0;
+        return (int) apartments.stream()
+                .filter(a -> !"свободна".equals(a.getStatus()))
+                .filter(a -> matchFilters(a, filters))
+                .count();
+    }
+
     /**
      * Проверяет, соответствует ли квартира заданным фильтрам.
      * <p>
@@ -258,6 +270,13 @@ public class JsonApartmentSearchService implements ApartmentSearchService {
         if (f.getPriceMin() != null && a.getPrice().compareTo(f.getPriceMin()) < 0) return false;
         if (f.getPriceMax() != null && a.getPrice().compareTo(f.getPriceMax()) > 0) return false;
         if (f.getRoomsMin() != null && a.getRooms() < f.getRoomsMin()) return false;
-        return f.getRoomsMax() == null || a.getRooms() <= f.getRoomsMax();
+        if (f.getRoomsMax() != null && a.getRooms() > f.getRoomsMax()) return false;
+
+        if (f.getComplex() != null && !f.getComplex().isBlank()) {
+            String want = f.getComplex().trim().toLowerCase(Locale.ROOT);
+            String have = a.getComplexName() != null ? a.getComplexName().toLowerCase(Locale.ROOT) : "";
+            if (!have.contains(want)) return false;
+        }
+        return true;
     }
 }

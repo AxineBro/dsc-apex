@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Крымский квартал",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-krymskiy-kvartal/",
+    "district": "Советский"
+  },
+  {
+    "name": "Европейский",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-evropeyskiy/",
+    "district": "Центральный"
+  },
+  {
+    "name": "Городские истории",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-gorodskie-istorii/",
+    "district": "Левобережный"
+  },
+  {
+    "name": "Яблоневые сады",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-yablonevye-sady/",
+    "district": "Коминтерновский"
+  },
+  {
+    "name": "Ленинградский квартал",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-leningradskiy-kvartal/",
+    "district": "Левобережный"
+  },
+  {
+    "name": "Парад Планет",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-parad-planet/",
+    "district": "Центральный"
+  },
+  {
+    "name": "Черёмушки",
+    "imageUrl": "https://dsk.vrn.ru/proekty/mikrorayon-cheremushki/",
+    "district": "Отрадное"
+  },
+  {
+    "name": "Ласточкино",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-lastochkino/",
+    "district": "Советский"
+  },
+  {
+    "name": "Задонье",
+    "imageUrl": "https://dsk.vrn.ru/proekty/zhk-zadone/",
+    "district": "Северный"
+  }
+]

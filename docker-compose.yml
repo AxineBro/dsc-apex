@@ -13,7 +13,7 @@ services:
       - GIGA_CHAT_UNSAFE_SSL=${GIGA_CHAT_UNSAFE_SSL:-true}
       - DB_URL=jdbc:postgresql://db:5432/agentdb
       - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASS:-secret}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
       - DB_DDL_AUTO=${DB_DDL_AUTO:-update}
       - DB_SHOW_SQL=${DB_SHOW_SQL:-false}
       - DB_FORMAT_SQL=${DB_FORMAT_SQL:-true}
@@ -22,7 +22,12 @@ services:
       - APP_FLAT_LIMIT=${APP_FLAT_LIMIT:-5}
       - APP_SLOW_THRESHOLD_MS=${APP_SLOW_THRESHOLD_MS:-60000}
       - APP_SLOW_SCORING_THRESHOLD_MS=${APP_SLOW_SCORING_THRESHOLD_MS:-20000}
+      - APP_TIMEOUT_REMINDER_WAIT_MINUTES=${APP_TIMEOUT_REMINDER_WAIT_MINUTES:-5}
+      - APP_TIMEOUT_SCHEDULER=${APP_TIMEOUT_SCHEDULER:-10}
+      - SPRINGDOC_API_DOCS_ENABLED=${SPRINGDOC_API_DOCS_ENABLED:-true}
+      - SPRINGDOC_SWAGGER_UI_ENABLED=${SPRINGDOC_SWAGGER_UI_ENABLED:-true}
       - APP_DATA_APARTMENTS=${APP_DATA_APARTMENTS:-data/apartments.json}
+      - APP_DATA_COMPLEXES=${APP_DATA_COMPLEXES:-data/complexes.json}
       - APP_OFFER_TEMPLATE=${APP_OFFER_TEMPLATE:-templates/offer_template.txt}
       - APP_SYSTEM_PROMPT=${APP_SYSTEM_PROMPT:-prompts/system_instruction.txt}
       - JAVA_OPTS=${JAVA_OPTS:--Xmx512m -Xms256m}
@@ -62,7 +67,7 @@ services:
     environment:
       POSTGRES_DB: agentdb
       POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASS:-secret}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
       - "5432:5432"
     volumes:

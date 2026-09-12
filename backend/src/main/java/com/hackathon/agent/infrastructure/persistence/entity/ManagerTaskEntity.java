@@ -100,10 +100,10 @@ public class ManagerTaskEntity {
      * Контактный телефон клиента для связи с ним.
      * <p>
      * Опциональное поле (может быть {@code null}), если номер не был предоставлен.
-     * Максимальная длина — 20 символов.
+     * Максимальная длина — 50 символов.
      * </p>
      */
-    @Column(name = "client_phone", length = 20)
+    @Column(name = "client_phone", length = 50)
     private String clientPhone;
 
     /**

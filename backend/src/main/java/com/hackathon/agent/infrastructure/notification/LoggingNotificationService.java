@@ -154,7 +154,7 @@ public class LoggingNotificationService implements NotificationService {
         long startTime = System.currentTimeMillis();
 
         log.info("Создание задачи для менеджера: сессия={}, причина={}, телефон={}",
-                sessionKey, reason, phone != null ? phone : "не указан");
+                sessionKey, reason, phone != null ? maskPhone(phone) : "не указан");
 
         try{
             String dialogText;
@@ -191,5 +191,10 @@ public class LoggingNotificationService implements NotificationService {
                     sessionKey, e.getMessage(), e);
             throw new DomainException("Не удалось сохранить задачу менеджера", e);
         }
+    }
+
+    private static String maskPhone(String p) {
+        if (p == null || p.length() < 4) return "не указан";
+        return "***" + p.substring(p.length() - 4);
     }
 }

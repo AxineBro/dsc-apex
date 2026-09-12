@@ -144,6 +144,8 @@ public class Filters {
      */
     private Integer roomsMax;
 
+    private String complex;
+
     /**
      * Проверяет, задан ли хотя бы один фильтр (не {@code null}).
      * <p>
@@ -165,6 +167,7 @@ public class Filters {
     public boolean isEmpty() {
         return areaMin == null && areaMax == null && floor == null &&
                 priceMin == null && priceMax == null &&
-                roomsMin == null && roomsMax == null;
+                roomsMin == null && roomsMax == null &&
+                (complex == null || complex.isBlank());
     }
 }

@@ -156,4 +156,6 @@ public interface ApartmentSearchService {
      * @throws ApartmentNotFoundException если квартира с указанным ID не найдена
      */
     Apartment getById(Long id);
+
+    int countBookedMatches(Filters filters);
 }
