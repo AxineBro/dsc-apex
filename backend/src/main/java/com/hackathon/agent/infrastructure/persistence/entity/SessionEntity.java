@@ -161,6 +161,8 @@ public class SessionEntity {
     @Column(name = "rooms_max")
     private Integer roomsMax;
     private Integer floor;
+    @Column(name = "complex")
+    private String complex;
 
     // -------------------- Служебные счётчики --------------------
 

@@ -716,6 +716,7 @@ public class GigaChatTools {
             session.setRoomsMin(null);
             session.setRoomsMax(null);
             session.setFloor(null);
+            session.setComplex(null);
             session.setCounter(0);
             session.resetClarificationCount();
             session.resetExpandedOnce();

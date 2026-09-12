@@ -272,6 +272,7 @@ public class SessionManagerImpl implements SessionManager {
         session.setRoomsMin(newFilters.getRoomsMin());
         session.setRoomsMax(newFilters.getRoomsMax());
         session.setFloor(newFilters.getFloor());
+        session.setComplex(newFilters.getComplex());
 
         session.setCurrentIndex(0);
         session.resetExpandedOnce();
