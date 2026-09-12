@@ -3,6 +3,8 @@ package com.hackathon.agent.infrastructure.catalog;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackathon.agent.api.dto.response.ChatAttachment;
+import com.hackathon.agent.domain.exception.ApartmentNotFoundException;
+import com.hackathon.agent.domain.model.Apartment;
 import com.hackathon.agent.domain.model.Session;
 import com.hackathon.agent.domain.service.ApartmentSearchService;
 import jakarta.annotation.PostConstruct;
@@ -170,11 +172,16 @@ public class ComplexCatalog {
                 return List.of();
             LinkedHashMap<String, Complex> uniq = new LinkedHashMap<>();
             for (Long id : session.getRankedList().stream().limit(10).toList()) {
-                var a = searchService.getById(id);
-                if (a == null || a.getComplexName() == null) continue;
-                Complex c = byName.get(norm(a.getComplexName()));
-                if (c != null) uniq.putIfAbsent(c.name(), c);
-                if (uniq.size() >= 3) break;
+                try{
+                    Apartment a = searchService.getById(id);
+
+                    if (a == null || a.getComplexName() == null) continue;
+                    Complex c = byName.get(norm(a.getComplexName()));
+                    if (c != null) uniq.putIfAbsent(c.name(), c);
+                    if (uniq.size() >= 3) break;
+                } catch (ApartmentNotFoundException e){
+                    log.warn("Apartment id {} from rankedList not found, skipping", id);
+                }
             }
             return uniq.values().stream()
                     .map(c -> new ChatAttachment("complex_image", c.imageUrl(), c.name()))

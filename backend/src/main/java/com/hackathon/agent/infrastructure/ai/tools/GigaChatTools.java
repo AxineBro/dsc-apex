@@ -389,7 +389,13 @@ public class GigaChatTools {
 
         List<Long> ids = session.getRankedList().stream().limit(FLAT_LIMIT).toList();
         List<Apartment> result = ids.stream()
-                .map(searchService::getById)
+                .map(id -> {
+                    try { return searchService.getById(id); }
+                    catch (Exception e) {
+                        log.warn("Apartment id {} from rankedList not found, skipping", id);
+                        return null;
+                    }
+                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         log.debug("getTopApartments вернул {} квартир (из запрошенных {})", result.size(), ids.size());
