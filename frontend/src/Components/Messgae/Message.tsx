@@ -10,6 +10,7 @@ import PenIcon from '../../assets/icons/pen.svg?react';
 import PenOutlineIcon from '../../assets/icons/pen-outline.svg?react';
 import RedoIcon from '../../assets/icons/redo.svg?react';
 import DskLogo from '../../assets/icons/dsk_logo_32x32.png';
+import OfferPdf from './OfferPdf';
 
 interface Props {
     text: string;
@@ -193,6 +194,8 @@ export const Message = memo(function Message({ text, messageType, createdAt, att
     }
 
     const hasAttachments = !!attachments?.length;
+    // PDF-файл КП от бэка (type: 'offer_pdf') — отдельным блоком, остальное — картинки ЖК
+    const offerPdf = attachments?.find((a) => a && a.type === 'offer_pdf' && typeof a.url === 'string' && a.url.trim() !== '');
 
     if (!text.trim() && !hasAttachments) {
         return (
@@ -228,6 +231,7 @@ export const Message = memo(function Message({ text, messageType, createdAt, att
                         </ReactMarkdown>
                     </div>
                 ) : null}
+                {offerPdf ? <OfferPdf attachment={offerPdf} /> : null}
                 {hasAttachments ? <ComplexImages attachments={attachments!} /> : null}
                 <div className="meta"><span>{fmt(createdAt)}</span></div>
             </div>

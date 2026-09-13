@@ -18,8 +18,17 @@ export interface ChatOk {
   transferredToManager?: boolean;
   /** Код причины перевода: user_requested/booked/no_options/... */
   managerReason?: string | null;
-  /** Вложения (complex_image — картинки ЖК, макс. 3). */
+  /** Вложения: complex_image — картинки ЖК (макс. 3), offer_pdf — PDF-файл КП от бэка. */
   attachments?: ChatAttachment[];
+}
+
+/** Относительный URL бэка ("/api/...") — в тот же origin, абсолютный — как есть. */
+export function resolveAttachmentUrl(url: string): string {
+  const u = (url || '').trim();
+  if (!u) return u;
+  if (/^https?:\/\//i.test(u) || u.startsWith('blob:') || u.startsWith('data:')) return u;
+  if (u.startsWith('/')) return `${API_BASE}${u}`;
+  return u;
 }
 
 export interface ChatApiError {

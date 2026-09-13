@@ -40,10 +40,17 @@ function makeTitle(text: string): string {
   return t.length > 32 ? t.slice(0, 32) + '…' : t;
 }
 
-/** Только complex_image, макс. 3 — остальное (plan_image и пр.) фронт игнорирует. */
+/** Только complex_image, макс. 3 — остальное (offer_pdf и пр.) фронт обрабатывает отдельно. */
 function pickComplexImages(list: ChatAttachment[] | undefined): ChatAttachment[] {
   if (!Array.isArray(list)) return [];
   return list.filter((a) => a && a.type === 'complex_image' && typeof a.url === 'string' && a.url.startsWith('http')).slice(0, 3);
+}
+
+/** Первое вложение offer_pdf от бэка ("/api/v1/offers/<id>/pdf") — файл КП. */
+function pickOfferPdf(list: ChatAttachment[] | undefined): ChatAttachment | null {
+  if (!Array.isArray(list)) return null;
+  const found = list.find((a) => a && a.type === 'offer_pdf' && typeof a.url === 'string' && a.url.trim() !== '');
+  return found ?? null;
 }
 
 /** Длинное КП и таблицы печатаем сразу — typewriter на них дёргается. */
@@ -257,10 +264,13 @@ function ChatWidget() {
       }
       const finalSid = sidRef.current;
 
-      // Картинки ЖК — на сообщение ассистента (неизвестные типы уже отрезаны)
+      // Картинки ЖК — на сообщение ассистента (offer_pdf обрабатывается отдельно)
       const imgs = pickComplexImages(res.attachments);
-      if (imgs.length) {
-        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, attachments: imgs } : m)));
+      const offerPdf = pickOfferPdf(res.attachments);
+      // PDF бэка держим отдельно от картинок, чтобы ComplexImages его не трогал
+      const msgAttachments = offerPdf ? [...imgs, offerPdf] : imgs;
+      if (msgAttachments.length) {
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, attachments: msgAttachments } : m)));
       }
 
       await typewriter(assistantId, res.reply);
