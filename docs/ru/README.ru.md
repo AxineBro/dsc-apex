@@ -12,7 +12,7 @@
 
 ## Продакшен-развёртывание (для конечных пользователей)
 
-Самый простой способ запустить **Dsc Apex** — использовать готовые Docker-образы, опубликованные в [GitHub Packages](https://github.com/AxineBro/dsc-apex/pkgs/container/dsc-apex).  
+Самый простой способ запустить **Dsc Apex** — использовать готовые Docker-образы, опубликованные в [GitHub Packages](https://github.com/AxineBro?tab=packages&repo_name=dsc-apex).  
 Никакой сборки, Java или Node.js не требуется — нужны только **Docker** и **Docker Compose**.
 
 ### Необходимые условия
