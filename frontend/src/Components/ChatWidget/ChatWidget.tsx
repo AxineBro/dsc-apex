@@ -82,13 +82,10 @@ function ChatWidget() {
   const messagesRef = useRef<MessageInfo[]>([]);
   const activeIdRef = useRef<string | null>(null);
   const chatsRef = useRef<StoredChat[]>([]);
-  const isLoadingRef = useRef(false);
-  const pendingFreshRef = useRef(false);
 
   useEffect(() => { messagesRef.current = messages; }, [messages]);
   useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
   useEffect(() => { chatsRef.current = chats; }, [chats]);
-  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
 
   useEffect(() => {
     const stored = loadChats();
@@ -157,22 +154,8 @@ function ChatWidget() {
     try { localStorage.removeItem(SID_KEY); } catch { /* ignore */ }
   }
 
-  function resetToDraft() {
-    setActiveId(null);
-    setMessages([makeWelcome()]);
-    clearSid();
-    setIsThinking(false);
-    setLastBackendState(null);
-  }
-
-  // всегда новый чат при открытии из closed
+  // Открытие из closed: продолжаем текущий чат, новый — только кнопкой «+» в меню
   function handleOpenFresh(next: ChatModes) {
-    if (isLoadingRef.current) {
-      pendingFreshRef.current = true;
-      setMode(next);
-      return;
-    }
-    resetToDraft();
     setMode(next);
   }
 
@@ -320,11 +303,6 @@ function ChatWidget() {
     } finally {
       setIsLoading(false);
       setIsThinking(false);
-      // закрывали и открывали во время загрузки — теперь показываем чистый черновик
-      if (pendingFreshRef.current) {
-        pendingFreshRef.current = false;
-        resetToDraft();
-      }
     }
   }
 
@@ -367,7 +345,6 @@ function ChatWidget() {
     if (isLoading || id === activeIdRef.current) return;
     const target = chatsRef.current.find((c) => c.id === id);
     if (!target) return;
-    pendingFreshRef.current = false;
     setActiveId(target.id);
     setMessages(target.messages.length ? target.messages : [makeWelcome()]);
     sidRef.current = target.sid;
@@ -401,7 +378,6 @@ function ChatWidget() {
   async function handleNewChat() {
     if (isLoading) return;
     if (activeIdRef.current === null && messagesRef.current.length <= 1) return;
-    pendingFreshRef.current = false;
     setActiveId(null);
     setMessages([makeWelcome()]);
     clearSid();
