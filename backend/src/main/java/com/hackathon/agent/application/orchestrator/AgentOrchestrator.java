@@ -4,6 +4,7 @@ import com.hackathon.agent.application.dto.ProcessResult;
 import com.hackathon.agent.application.facade.ChatFacade;
 import com.hackathon.agent.domain.model.Session;
 import com.hackathon.agent.domain.model.SessionState;
+import com.hackathon.agent.domain.service.OfferService;
 import com.hackathon.agent.infrastructure.ai.GigaChatClient;
 import com.hackathon.agent.infrastructure.ai.prompt.SystemPromptProvider;
 import com.hackathon.agent.infrastructure.ai.tools.GigaChatTools;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -110,6 +112,7 @@ public class AgentOrchestrator {
     private final GigaChatTools tools;
     private final SessionManager sessionManager;
     private final ComplexCatalog complexCatalog;
+    private final OfferService offerService;
 
     /**
      * Пороговое значение времени выполнения (в миллисекундах) для вызова GigaChat,
@@ -132,27 +135,25 @@ public class AgentOrchestrator {
 
     /**
      * Обрабатывает сообщение и возвращает расширенный результат: ответ бота,
-     * статус сессии, признак перевода на менеджера, причину перевода и вложения.
+     * статус сессии, признак и причину перевода на менеджера, а также вложения.
      * <p>
-     * Обёртка над {@link #process(Session, String)}: делегирует основную обработку,
-     * а затем собирает {@link ProcessResult}. Если сессия была переведена на менеджера
-     * (статус {@link SessionState#TO_MANAGER}), извлекает причину перевода через
-     * {@link GigaChatTools#drainLastTransferReason()} (при отсутствии — {@code "unknown"})
-     * и прикладывает вложения из {@link ComplexCatalog#attachmentsFor(Session)}.
+     * Обёртка над {@link #process(Session, String)}: делегирует основную
+     * обработку, затем собирает {@link ProcessResult}. Если сессия переведена
+     * на менеджера ({@link SessionState#TO_MANAGER}), извлекает причину через
+     * {@link GigaChatTools#drainLastTransferReason()} (при отсутствии —
+     * {@code "unknown"}). Формирует вложения: изображения ЖК
+     * ({@link ComplexCatalog#attachmentsFor(Session)}) и, при статусе
+     * {@link SessionState#OFFER_READY}, ссылку на PDF последнего КП.
+     * </p>
+     * <p>
+     * Выполняется в транзакции ({@code @Transactional}). Исключения не
+     * пробрасываются — {@link #process} обрабатывает их самостоятельно и
+     * возвращает fallback-ответ.
      * </p>
      *
-     * <p><b>Особенности:</b></p>
-     * <ul>
-     *     <li>Выполняется в транзакции ({@code @Transactional}).</li>
-     *     <li>В блоке {@code finally} сбрасывает «повисшую» причину перевода,
-     *         если сессия не находится в статусе {@code TO_MANAGER}.</li>
-     *     <li>Не пробрасывает исключения — {@link #process} обрабатывает их
-     *         самостоятельно и возвращает fallback-ответ.</li>
-     * </ul>
-     *
-     * @param session     объект сессии (не {@code null}).
-     * @param userMessage текст сообщения пользователя (не {@code null}, не пустой).
-     * @return {@link ProcessResult} с ответом бота и метаданными; никогда не {@code null}.
+     * @param session     объект сессии (не {@code null})
+     * @param userMessage текст сообщения пользователя (не {@code null}, не пустой)
+     * @return {@link ProcessResult} с ответом бота и метаданными; никогда не {@code null}
      * @see #process(Session, String)
      * @see ProcessResult
      * @see ChatFacade#processMessageRich(String, String)
@@ -174,7 +175,19 @@ public class AgentOrchestrator {
             reason = tools.drainLastTransferReason();
             if (reason == null) reason = "unknown";
         }
-        return new ProcessResult(reply, session.getStatus(), transferred, reason, complexCatalog.attachmentsFor(session));
+
+        List<ChatAttachment> attachments = new ArrayList<>(complexCatalog.attachmentsFor(session));
+
+        if (session.getStatus() == SessionState.OFFER_READY) {
+            offerService.findLatestBySessionId(session.getId()).ifPresent(offer ->
+                    attachments.add(new ChatAttachment(
+                            "offer_pdf",
+                            "/api/v1/offers/" + offer.getId() + "/pdf",
+                            "Коммерческое предложение (PDF)"
+                    ))
+            );
+        }
+        return new ProcessResult(reply, session.getStatus(), transferred, reason, attachments);
     }
 
 

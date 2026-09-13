@@ -122,6 +122,21 @@ public class SessionEntity {
     private String status;
 
     /**
+     * ID квартиры, для которой сформировано последнее коммерческое предложение (КП)
+     * в рамках сессии.
+     * <p>
+     * Соответствует доменному полю
+     * {@link com.hackathon.agent.domain.model.Session#getSelectedApartmentId()}.
+     * Заполняется при успешном создании КП.
+     * </p>
+     * <p>
+     * Значение {@code null} означает, что КП в рамках сессии ещё не формировалось.
+     * </p>
+     */
+    @Column(name = "selected_apartment_id")
+    private Long selectedApartmentId;
+
+    /**
      * Контактный телефон клиента, полученный в процессе диалога.
      * <p>
      * Сохраняется для передачи менеджеру при переводе сессии в статус

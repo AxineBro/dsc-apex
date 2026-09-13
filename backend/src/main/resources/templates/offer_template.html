@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Коммерческое предложение</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 16mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: '{fontFamily}', sans-serif;
+            font-size: 11pt;
+            color: #1f2937;
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 8px;
+            margin-bottom: 18px;
+        }
+
+        .header .title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .header .subtitle {
+            font-size: 10pt;
+            color: #6b7280;
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 6px;
+            border-left: 4px solid #2563eb;
+            padding-left: 8px;
+        }
+
+        table.info {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.info td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        table.info td.label {
+            width: 45%;
+            color: #6b7280;
+        }
+
+        table.info td.value {
+            width: 55%;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .price-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 8px 0 16px 0;
+        }
+
+        .price-box .price {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1d4ed8;
+        }
+
+        .price-box .per-m2 {
+            font-size: 10pt;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .contact {
+            background: #f9fafb;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 10.5pt;
+        }
+
+        .footer {
+            margin-top: 24px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .muted {
+            color: #6b7280;
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <div class="title">Коммерческое предложение</div>
+        <div class="subtitle">Подобрано специально для вас</div>
+    </div>
+    <div class="subtitle">от {generatedAt}</div>
+</div>
+
+<div class="section">
+    <div class="section-title">Об объекте</div>
+    <table class="info">
+        <tr>
+            <td class="label">Жилой комплекс</td>
+            <td class="value">{complexName}</td>
+        </tr>
+        <tr>
+            <td class="label">Адрес</td>
+            <td class="value">{address}</td>
+        </tr>
+        <tr>
+            <td class="label">Позиция дома</td>
+            <td class="value">{housePosition}</td>
+        </tr>
+        <tr>
+            <td class="label">Номер квартиры</td>
+            <td class="value">{flatNumber}</td>
+        </tr>
+        <tr>
+            <td class="label">Этаж / этажность</td>
+            <td class="value">{floor} / {totalFloors}</td>
+        </tr>
+        <tr>
+            <td class="label">Комнат</td>
+            <td class="value">{rooms}</td>
+        </tr>
+        <tr>
+            <td class="label">Общая площадь</td>
+            <td class="value">{area} м²</td>
+        </tr>
+        <tr>
+            <td class="label">Жилая площадь</td>
+            <td class="value">{livingArea} м²</td>
+        </tr>
+        <tr>
+            <td class="label">Вид из окон</td>
+            <td class="value">{viewType}</td>
+        </tr>
+        <tr>
+            <td class="label">Парковка</td>
+            <td class="value">{parking}</td>
+        </tr>
+        <tr>
+            <td class="label">Срок сдачи</td>
+            <td class="value">{deadline}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="price-box">
+    <div class="price">{price}</div>
+    <div class="per-m2">{pricePerM2} за м²</div>
+</div>
+
+<div class="section">
+    <div class="section-title">Дополнительно</div>
+    <div class="muted">
+        Планировка и подробная информация о квартире доступны по ссылкам:
+    </div>
+    <table class="info">
+        <tr>
+            <td class="label">Планировка</td>
+            <td class="value">{planUrl}</td>
+        </tr>
+        <tr>
+            <td class="label">Карточка квартиры</td>
+            <td class="value">{cardUrl}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="section contact">
+    <div class="section-title">Связь с нами</div>
+    <div>
+        Если у вас появились вопросы по данной квартире или условиям покупки,
+        свяжитесь с нашим менеджером — мы поможем с выбором и оформлением.
+    </div>
+    <div style="margin-top:6px;">
+        Контактный телефон: <b>{clientPhone}</b>
+    </div>
+</div>
+
+<div class="footer">
+    Сформировано автоматически системой подбора квартир. Номер обращения: {sessionKey}
+</div>
+
+</body>
+</html>

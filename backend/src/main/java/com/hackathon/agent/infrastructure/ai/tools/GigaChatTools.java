@@ -4,15 +4,8 @@ import com.hackathon.agent.api.dto.response.ChatResponse;
 import com.hackathon.agent.application.orchestrator.AgentOrchestrator;
 import com.hackathon.agent.application.orchestrator.SessionManager;
 import com.hackathon.agent.domain.exception.ApartmentNotFoundException;
-import com.hackathon.agent.domain.model.Apartment;
-import com.hackathon.agent.domain.model.Filters;
-import com.hackathon.agent.domain.model.ScoredApartment;
-import com.hackathon.agent.domain.model.Session;
-import com.hackathon.agent.domain.model.SessionState;
-import com.hackathon.agent.domain.service.ApartmentSearchService;
-import com.hackathon.agent.domain.service.NotificationService;
-import com.hackathon.agent.domain.service.OfferGeneratorService;
-import com.hackathon.agent.domain.service.ScoringService;
+import com.hackathon.agent.domain.model.*;
+import com.hackathon.agent.domain.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -78,7 +71,7 @@ public class GigaChatTools {
     private final SessionManager sessionManager;
     private final ApartmentSearchService searchService;
     private final ScoringService scoringService;
-    private final OfferGeneratorService offerService;
+    private final OfferService offerService;
     private final NotificationService notificationService;
 
     /**
@@ -574,24 +567,32 @@ public class GigaChatTools {
     }
 
     /**
-     * Генерирует коммерческое предложение для выбранной квартиры.
+     * Формирует коммерческое предложение (КП) для выбранной квартиры.
      * <p>
-     * Инструмент для AI-агента. Используется, когда пользователь выбрал конкретную квартиру
-     * и запрашивает финальное предложение. Проверяет статус квартиры (должна быть свободна)
-     * и генерирует текст оффера через {@link OfferGeneratorService}.
-     * Статус сессии устанавливается в {@link SessionState#OFFER_READY}.
+     * Инструмент для AI-агента. Вызывается, когда клиент явно выбрал квартиру
+     * и хочет оформить покупку. Проверяет статус квартиры (должна быть свободна),
+     * создаёт КП через {@link OfferService#createOffer(Session, Apartment)},
+     * сохраняет {@code selectedApartmentId} в сессии и переводит её в статус
+     * {@link SessionState#OFFER_READY}.
+     * </p>
+     * <p>
+     * Возвращает короткое подтверждение об успехе либо сообщение об ошибке
+     * (сессия не найдена, {@code apartmentId == null}, квартира не найдена
+     * или уже забронирована, техническая ошибка). Исключения не пробрасываются.
      * </p>
      *
-     * @param apartmentId ID выбранной квартиры
-     * @return текст коммерческого предложения или сообщение об ошибке, если квартира недоступна
+     * @param apartmentId ID выбранной квартиры (Long)
+     * @return подтверждение успеха или сообщение об ошибке для клиента
+     * @see OfferService#createOffer(Session, Apartment)
+     * @see SessionState#OFFER_READY
      */
     @Tool(description = """
     Сформировать коммерческое предложение для выбранной квартиры.
     Вызывай этот инструмент, когда клиент явно выбрал квартиру (по номеру или описанию) и хочет оформить покупку.
     Инструмент проверит статус квартиры в реальном времени – если она уже забронирована, вернёт сообщение об ошибке.
-    В случае успеха вернёт текст предложения, а статус сессии будет изменён на OFFER_READY.
+    В случае успеха создаст PDF-файл КП и вернёт короткое подтверждение.
     После вызова этого инструмента диалог можно завершить или предложить записаться на просмотр.
-    ВАЖНО: верни пользователю ТОЧНО ТОТ ЖЕ ТЕКСТ, который вернул этот инструмент, без изменений, без добавлений и без перефразирования. Не пиши "коммерческое предложение сформировано" – просто верни полученный текст.
+    Не пересказывай содержимое КП клиенту — просто сообщи, что файл готов и его можно скачать.
     """)
     public String generateOffer(
             @ToolParam(description = "ID выбранной квартиры (Long)") Long apartmentId
@@ -622,13 +623,15 @@ public class GigaChatTools {
                 return "К сожалению, эта квартира уже забронирована. Выберите другой вариант.";
             }
 
-            String offerText = offerService.generateOffer(apartment, session);
+            Offer offer = offerService.createOffer(session, apartment);
+
+            session.setSelectedApartmentId(apartmentId);
             session.setStatus(SessionState.OFFER_READY);
             sessionManager.save(session);
             long duration = System.currentTimeMillis() - startTime;
-            log.info("Коммерческое предложение сгенерировано для квартиры ID {}, длина текста {}, duration={}ms",
-                    apartmentId, offerText.length(), duration);
-            return offerText;
+            log.info("Коммерческое предложение сгенерировано для квартиры ID {}, id оффера {}, duration={}ms",
+                    apartmentId, offer.getId(), duration);
+            return "Коммерческое предложение сформировано. Файл доступен для скачивания.";
         }catch (ApartmentNotFoundException e) {
             long duration = System.currentTimeMillis() - startTime;
             log.warn("Квартира с ID {} не найдена в базе: duration={}ms, error={}",

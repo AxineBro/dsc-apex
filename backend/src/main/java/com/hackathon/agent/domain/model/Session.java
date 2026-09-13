@@ -129,6 +129,22 @@ public class Session {
      */
     private SessionState status;
 
+    /**
+     * ID квартиры, для которой сформировано последнее коммерческое предложение (КП)
+     * в рамках данной сессии.
+     * <p>
+     * Заполняется при успешном создании КП в
+     * {@link com.hackathon.agent.infrastructure.ai.tools.GigaChatTools#generateOffer(Long)}.
+     * Используется для связи сессии с выбранным объектом недвижимости, в том числе
+     * при формировании вложений к ответу бота в
+     * {@link com.hackathon.agent.application.orchestrator.AgentOrchestrator#processRich}.
+     * </p>
+     * <p>
+     * Значение {@code null} означает, что КП в рамках сессии ещё не формировалось.
+     * </p>
+     */
+    private Long selectedApartmentId;
+
     // -------------------- Параметры подбора (фильтры) --------------------
 
     /**
