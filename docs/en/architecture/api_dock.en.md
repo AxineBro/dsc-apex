@@ -12,6 +12,7 @@ http://localhost:8080
 
 All chat endpoints are prefixed with `/api/v1/chat`.
 Manager endpoints are `/api/v1/manager/tasks`.
+Endpoints for retrieving commercial offer PDFs are `/api/v1/offers` and `/api/v1/chat/sessions`.
 
 ## Swagger UI / OpenAPI
 
@@ -26,7 +27,7 @@ Interactive API documentation is available via **Swagger UI** (springdoc-openapi
 
 **Swagger UI features:**
 
-- View all endpoints (chat and manager tasks) with parameter and schema descriptions.
+- View all endpoints (chat, manager tasks, commercial offers) with parameter and schema descriptions.
 - Send real requests ("Try it out") directly from the browser.
 - Automatic substitution of the `X-Session-Id` header (specified manually if needed).
 - View DTO schemas: `ChatRequest`, `ChatResponse`, `ChatAttachment`, `SessionInitResponse`, `ManagerTaskDto`.
@@ -71,8 +72,8 @@ All errors are returned in a standardized format:
 | :---------- | :--------------------------------------------------------------- |
 | `200 OK`    | Request completed successfully.                                  |
 | `400 Bad Request` | Invalid request or validation error.                      |
-| `404 Not Found` | Resource not found (manager task, apartment, etc.).       |
-| `409 Conflict` | Resource conflict (e.g., apartment already booked).       |
+| `404 Not Found` | Resource not found (manager task, apartment, offer, etc.). |
+| `409 Conflict` | Resource conflict: the apartment is already booked, or the commercial offer PDF is not yet generated. |
 | `429 Too Many Requests` | Request or cycle limit exceeded.                  |
 | `500 Internal Server Error` | Unexpected server error.                          |
 
@@ -146,11 +147,13 @@ Sends a user message to the AI assistant and receives a reply. The session is cr
 
 **`ChatAttachment` object:**
 
-| Field   | Type   | Description                                                                 |
-| :------ | :----- | :-------------------------------------------------------------------------- |
-| `type`  | string | Attachment type. Currently `"complex_image"` — a residential complex image. |
-| `url`   | string | Absolute URL of the media resource.                                         |
-| `title` | string | Caption (e.g., residential complex name).                                   |
+| Field   | Type   | Description                                                                                                                            |
+| :------ | :----- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`  | string | Attachment type. Supported values: `"complex_image"` — a residential complex image; `"offer_pdf"` — a PDF file of the commercial offer. |
+| `url`   | string | URL of the media resource. For `"complex_image"` — absolute URL; for `"offer_pdf"` — relative path like `/api/v1/offers/{offerId}/pdf`, which the client must resolve against the base URL. |
+| `title` | string | Caption. For `"complex_image"` — residential complex name; for `"offer_pdf"` — usually `"Commercial offer (PDF)"`.                     |
+
+> **Note:** when the session transitions to `OFFER_READY`, a `ChatAttachment` with type `offer_pdf` is added to the `attachments` field of the `ChatResponse`, containing a link to download the commercial offer PDF.
 
 **Example request:**
 
@@ -193,6 +196,25 @@ Content-Type: application/json
   "transferredToManager": true,
   "managerReason": "limit_cycles",
   "attachments": []
+}
+```
+
+**Example response (200 OK) — commercial offer ready:**
+
+```json
+{
+  "reply": "The commercial offer has been generated. The file is available for download.",
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "state": "OFFER_READY",
+  "transferredToManager": false,
+  "managerReason": null,
+  "attachments": [
+    {
+      "type": "offer_pdf",
+      "url": "/api/v1/offers/123e4567-e89b-12d3-a456-426614174000/pdf",
+      "title": "Commercial offer (PDF)"
+    }
+  ]
 }
 ```
 
@@ -312,6 +334,126 @@ Content-Type: application/json
 
 ---
 
+## Endpoints — Commercial Offers (PDF)
+
+Controller responsible for delivering the commercial offer PDF (`OfferController`). Provides two independent ways to retrieve the PDF: by internal offer ID and by the public session key (`X-Session-Id`).
+
+### 1. Download PDF by Offer ID
+
+Returns the PDF file of a specific commercial offer by its unique identifier.
+
+**Endpoint:** `GET /api/v1/offers/{offerId}/pdf`
+
+**Path parameters:**
+
+| Parameter | Type   | Description                                    |
+| :-------- | :----- | :--------------------------------------------- |
+| `offerId` | string | UUID of the commercial offer (standard format). |
+
+**Response headers:**
+
+| Header                | Value                                              |
+| :-------------------- | :------------------------------------------------- |
+| `Content-Type`        | `application/pdf`                                  |
+| `Content-Disposition` | `attachment; filename="offer-<offerId>.pdf"`       |
+| `Content-Length`      | PDF size in bytes                                  |
+
+**Response body:** binary PDF data.
+
+**Response codes:**
+
+| Status          | Description                                                           |
+| :-------------- | :-------------------------------------------------------------------- |
+| `200 OK`        | PDF successfully generated and returned.                              |
+| `404 Not Found` | Offer with the specified `offerId` was not found.                     |
+| `409 Conflict`  | Offer exists but the PDF has not been generated yet (status not `READY`). |
+
+**Example request:**
+
+```http
+GET /api/v1/offers/123e4567-e89b-12d3-a456-426614174000/pdf
+```
+
+**Example response (200 OK):**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="offer-123e4567-e89b-12d3-a456-426614174000.pdf"
+Content-Length: 45231
+
+<binary PDF data>
+```
+
+**Example response (409 Conflict):**
+
+```json
+{
+  "timestamp": "2026-09-05T12:34:56.789Z",
+  "status": 409,
+  "error": "Conflict",
+  "message": "PDF ещё не сгенерирован",
+  "path": "/api/v1/offers/123e4567-e89b-12d3-a456-426614174000/pdf"
+}
+```
+
+---
+
+### 2. Download Latest Offer PDF by Session Key
+
+Returns the PDF of the latest commercial offer associated with the specified session. Used by the client when only the public session key (`X-Session-Id`) is known, and the internal offer ID is unknown.
+
+**Endpoint:** `GET /api/v1/chat/sessions/{sessionKey}/offer/pdf`
+
+**Path parameters:**
+
+| Parameter    | Type   | Description                                                          |
+| :----------- | :----- | :------------------------------------------------------------------- |
+| `sessionKey` | string | Public session key (same as the `X-Session-Id` header value).        |
+
+**Response headers:** same as the `GET /api/v1/offers/{offerId}/pdf` endpoint. The filename is derived from the internal ID of the resolved offer: `offer-<offerId>.pdf`.
+
+**Response body:** binary PDF data.
+
+**Response codes:**
+
+| Status          | Description                                                                        |
+| :-------------- | :--------------------------------------------------------------------------------- |
+| `200 OK`        | The latest offer PDF for the session was successfully returned.                    |
+| `404 Not Found` | Session with the specified key was not found.                                      |
+| `409 Conflict`  | No offer has been generated for the session yet, or the PDF is not ready.          |
+
+**Example request:**
+
+```http
+GET /api/v1/chat/sessions/550e8400-e29b-41d4-a716-446655440000/offer/pdf
+```
+
+**Example response (200 OK):**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="offer-123e4567-e89b-12d3-a456-426614174000.pdf"
+Content-Length: 45231
+
+<binary PDF data>
+```
+
+**Example response (409 Conflict):**
+
+```json
+{
+  "timestamp": "2026-09-05T12:34:56.789Z",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Коммерческое предложение для сессии ещё не сформировано",
+  "path": "/api/v1/chat/sessions/550e8400-e29b-41d4-a716-446655440000/offer/pdf"
+}
+```
+
+---
+
 ## Session Management
 
 ### Session Lifecycle
@@ -327,6 +469,10 @@ Content-Type: application/json
 4. **Transfer to manager:** When the assistant cannot handle a request (error, insufficient data, cycle limit, off-topic question, explicit request), the session is transferred to a human manager. The reason is stored in `managerReason` and in the `manager_tasks` table.
 
 5. **Completion:** Sessions can reach the `FINISHED` state (successful scenario via `OFFER_READY`) or `TO_MANAGER`. Both states block further AI processing.
+
+6. **Commercial Offer (PDF):** when the session transitions to `OFFER_READY`, a `ChatAttachment` of type `offer_pdf` appears in the `ChatResponse`, containing a link of the form `/api/v1/offers/{offerId}/pdf`. The client can download the PDF in two ways:
+   - by offer ID: `GET /api/v1/offers/{offerId}/pdf`;
+   - by session key: `GET /api/v1/chat/sessions/{sessionKey}/offer/pdf` (returns the latest offer for the session).
 
 ### Session States (`SessionState`)
 
@@ -397,7 +543,7 @@ Apartments are scored by non-metric parameters using AI (range 0–100):
 
 ### Commercial Offer Generation
 
-The assistant generates personalized commercial offers using templates. Available placeholders:
+The assistant generates personalized commercial offers using templates. On success, a PDF file is generated (via `OfferPdfGenerator`) and saved to the database in the `offers` table with status `READY`. Available placeholders in the template:
 
 | Placeholder      | Description                                  |
 | :--------------- | :------------------------------------------- |
@@ -410,6 +556,8 @@ The assistant generates personalized commercial offers using templates. Availabl
 | `{price}`        | Price in rubles.                             |
 | `{viewType}`     | Window view.                                 |
 | `{parking}`      | `"есть"` or `"нет"`.                         |
+
+Additional placeholders are available for the PDF template: `{district}`, `{housePosition}`, `{flatNumber}`, `{livingArea}`, `{pricePerM2}`, `{deadline}`, `{planUrl}`, `{cardUrl}`, `{clientPhone}`, `{sessionKey}`, `{generatedAt}`, `{fontFamily}`.
 
 ### Manager Escalation Reasons
 
@@ -504,7 +652,10 @@ Additional fixed thresholds:
 | `app.data.apartments`                                 | Classpath path to the apartments JSON file.                | `data/apartments.json`           |
 | `app.data.complexes`                                  | Classpath path to the residential complexes JSON catalog.  | `data/complexes.json`            |
 | `app.prompt.path`                                     | Classpath path to the system prompt file.                  | `prompts/system_instruction.txt` |
-| `app.resource.path`                                   | Classpath path to the commercial offer template.           | `templates/offer_template.txt`   |
+| `app.resource.path`                                   | Classpath path to the text commercial offer template.      | `templates/offer_template.txt`   |
+| `app.offer.pdf-template-path`                         | Classpath path to the HTML PDF commercial offer template.  | `templates/offer_template.html`  |
+| `app.offer.pdf-font-path`                             | Classpath path to the TTF font with Cyrillic support.      | `fonts/DejaVuSans.ttf`           |
+| `app.offer.pdf-font-family`                           | Font family name for CSS in the PDF HTML template.         | `DejaVuSans`                     |
 
 ### Logging
 
@@ -570,6 +721,7 @@ The API uses versioned endpoints:
 - Current version: `v1`
 - Chat: `/api/v1/chat`
 - Manager tasks: `/api/v1/manager/tasks`
+- Commercial offers (PDF): `/api/v1/offers`, `/api/v1/chat/sessions`
 - Future versions: `/api/v2/chat` (backward compatible)
 
 ---
@@ -594,26 +746,27 @@ For production, it is recommended to add:
 ### Architectural Layers
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Controller Layer                         │
-│   (ChatController, ManagerTaskController, DTO)              │
-└─────────────────────────┬───────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                    Controller Layer                              │
+│  (ChatController, ManagerTaskController, OfferController, DTO)   │
+└─────────────────────────┬────────────────────────────────────────┘
                           │
-┌─────────────────────────▼───────────────────────────────────┐
-│                    Application Layer                        │
-│   (ChatFacade, AgentOrchestrator, SessionManager, Tools)    │
-└─────────────────────────┬───────────────────────────────────┘
+┌─────────────────────────▼────────────────────────────────────────┐
+│                    Application Layer                             │
+│   (ChatFacade, AgentOrchestrator, SessionManager, Tools)         │
+└─────────────────────────┬────────────────────────────────────────┘
                           │
-┌─────────────────────────▼───────────────────────────────────┐
-│                    Domain Layer                             │
-│        (Session, Apartment, Filters, Services)              │
-└─────────────────────────┬───────────────────────────────────┘
+┌─────────────────────────▼────────────────────────────────────────┐
+│                    Domain Layer                                  │
+│   (Session, Apartment, Filters, Offer, Services)                 │
+└─────────────────────────┬────────────────────────────────────────┘
                           │
-┌─────────────────────────▼───────────────────────────────────┐
-│                 Infrastructure Layer                        │
-│  (GigaChatClient, Repository, Mappers, Notifications,       │
-│   ComplexCatalog, JsonApartmentSearchService)               │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────▼────────────────────────────────────────┐
+│                 Infrastructure Layer                             │
+│  (GigaChatClient, Repository, Mappers, Notifications,            │
+│   ComplexCatalog, JsonApartmentSearchService, OfferPdfGenerator, │
+│   OfferServiceImpl)                                              │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Design Patterns
@@ -623,7 +776,7 @@ For production, it is recommended to add:
 | **Facade**      | `ChatFacade` orchestrates session management and AI calls.   |
 | **Orchestrator**| `AgentOrchestrator` coordinates AI processing.               |
 | **Repository**  | Spring Data JPA for data access.                             |
-| **Mapper**      | `SessionMapper` and `ManagerTaskMapper` for DTO↔Entity.      |
+| **Mapper**      | `SessionMapper`, `ManagerTaskMapper`, `OfferMapper` for DTO↔Entity. |
 | **ThreadLocal** | `SessionManager` uses ThreadLocal for request-scoped sessions. |
 | **Strategy**    | Different search strategies (normal, expanded).              |
 
@@ -650,6 +803,10 @@ The application uses `@EnableResilientMethods` (Spring Resilience4j) for:
 | Received reason `limit_cycles`       | `app.max.cycles` reached. Transfer to a manager or reset the session. |
 | Database connection errors           | Ensure PostgreSQL is running and the connection string is correct. |
 | Swagger UI unavailable               | Ensure the backend is running and springdoc-openapi is not disabled in the profile. |
+| PDF not downloadable, response `409 Conflict` | The offer has not been generated yet. Wait for the `OFFER_READY` state before downloading. |
+| PDF endpoint returns `404 Not Found` | Check that the `offerId` (UUID) or `sessionKey` is correct. |
+| PDF contains garbled text instead of Cyrillic | Ensure `app.offer.pdf-font-path` points to a TTF font with Cyrillic support (e.g., DejaVuSans.ttf) and that the name in `app.offer.pdf-font-family` matches the CSS template. |
+| Error loading the HTML offer template | Check the `app.offer.pdf-template-path` and the presence of the file in `src/main/resources/templates/`. |
 
 ### Debugging
 

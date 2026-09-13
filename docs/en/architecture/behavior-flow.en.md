@@ -2,14 +2,14 @@
 ### Global Constraints (Failure Protection)
 - Maximum number of **clarifying questions** on parameters — **2** (if the client does not provide data, we call the manager).
 - Maximum number of **selection loops with filter changes** (after displaying the list) — **5** (but the counter increases **only when budget or area is changed**, changes to floor or other non‑critical parameters are not counted).
-- User response timeout — **10 minutes** (upon timeout — we save the dialog, send a notification to the manager and write to the client: *“I see you are reviewing options. Let me know if you need help”*).
-- Apartment status in the database: **only ‘available’** is included in the results; ‘reserved’ and ‘sold’ are excluded immediately.
+- User response timeout — **10 minutes** (upon timeout — we save the dialog, send a notification to the manager and write to the client: *"I see you are reviewing options. Let me know if you need help"*).
+- Apartment status in the database: **only 'available'** is included in the results; 'reserved' and 'sold' are excluded immediately.
 
 ### Step 1. Incoming request + client identification
 - Check whether the client has an **ID/phone number** (from previous sessions).
-- If **yes** → the agent writes: *“Hello! We have already selected options for you before. Shall we continue with the same parameters or start over?”*
-  - Option A: “continue” → load the last filters and go to **Step 5**.
-  - Option B: “start over” → reset filters, loop counter = 0, go to **Step 2**.
+- If **yes** → the agent writes: *"Hello! We have already selected options for you before. Shall we continue with the same parameters or start over?"*
+  - Option A: "continue" → load the last filters and go to **Step 5**.
+  - Option B: "start over" → reset filters, loop counter = 0, go to **Step 2**.
 - If **no** → go to **Step 2**.
 
 ### Step 2. Extraction of key parameters
@@ -39,12 +39,12 @@
 ### Step 6. Check the number of found options
 
 #### 6.1. If **0** options:
-- Apply **“smart expansion”** (once):  
+- Apply **"smart expansion"** (once):  
   - Area: `±10%` (but not less than 20 m² and not exceeding the maximum area in the building, if any constraints).  
   - Price: `±10%`  
-  - Floor: `±2` (but not exceeding the building’s total floors)  
+  - Floor: `±2` (but not exceeding the building's total floors)  
 - Go to the database again (Step 5) with the expanded filters.  
-- **If after expansion there are still 0** → transfer to manager with message: *“Unfortunately, even close options are not available. A specialist will contact you”*.
+- **If after expansion there are still 0** → transfer to manager with message: *"Unfortunately, even close options are not available. A specialist will contact you"*.
 
 #### 6.2. If **>0** options:
 - Proceed to **Step 7**.
@@ -55,20 +55,20 @@
 - Obtain a **score (0–100)** for each apartment. 
 - Sort the list descending by score.
 
-### Step 8. Build the “top” for display
+### Step 8. Build the "top" for display
 - Take the **first 5** apartments from the sorted list (or all if fewer).  
 - Store the **complete ranked list** (for scrolling without changing filters).
 
 ### Step 9. Decision based on the top count
 
 #### 9.1. If the top has **exactly 1** apartment:
-- Show a brief description (floor, area, price, score) and **ask**: *“This is the only matching option. Does it suit you, or would you like to see others (possibly with changed parameters)?”*  
+- Show a brief description (floor, area, price, score) and **ask**: *"This is the only matching option. Does it suit you, or would you like to see others (possibly with changed parameters)?"*  
 - If the client confirms → go to **Step 11** (generating the commercial offer).  
-- If the client says “no” → handle as “Change parameters” or “Another option from the list” (if the full list contains more options but they did not make it into the top — see Step 10).
+- If the client says "no" → handle as "Change parameters" or "Another option from the list" (if the full list contains more options but they did not make it into the top — see Step 10).
 
 #### 9.2. If the top has **2–5** apartments:
 - Display a **short list** (number, floor, area, price, score) and ask:  
-  *“Choose one of the options, or refine parameters (e.g., ‘cheaper’, ‘higher floor’), or say ‘show next’ if you don’t like any”*.  
+  *"Choose one of the options, or refine parameters (e.g., 'cheaper', 'higher floor'), or say 'show next' if you don't like any"*.  
 - Enter the waiting mode for a response (Step 10).
 
 ### Step 10. Handling the user response (after list display)
@@ -76,31 +76,35 @@
 - Analyse the response using LLM (intent classification). **New intents added**:
 
 #### Options:
-- **“Selected an apartment”** (user specified a number or description) → go to **Step 11** (generating the commercial offer).  
-- **“Show next option”** (or “another”, “more”, “next”, “don’t like this one”) →  
+- **"Selected an apartment"** (user specified a number or description) → go to **Step 11** (generating the commercial offer).  
+- **"Show next option"** (or "another", "more", "next", "don't like this one") →  
   - Take the next apartment from the **full ranked list** (not from the top).  
   - Show it briefly and ask again.  
   - **This does NOT increase the loop counter**, because filters have not changed.  
   - If the list is exhausted → suggest changing parameters or call the manager.  
-- **“Call the manager”** (explicit request or phrases like “I want to talk to a person”) → **transfer to manager**.  
-- **“Change parameters”** (e.g., “show cheaper”, “I want a different floor”, “I need larger area”) →  
+- **"Call the manager"** (explicit request or phrases like "I want to talk to a person") → **transfer to manager**.  
+- **"Change parameters"** (e.g., "show cheaper", "I want a different floor", "I need larger area") →  
   - Update **only those filters that were explicitly mentioned**, leave the rest unchanged.  
   - **Increase the selection loop counter only if budget or area is changed** (changing floor or rooms is not counted).  
   - If counter < 5 → return to **Step 5** with new filters.  
-  - If counter = 5 → say: *“We have already adjusted several times, better I connect you to a manager”* → transfer.  
-- **“Off‑topic but related to the building”** (completion dates, materials, developer) →  
+  - If counter = 5 → say: *"We have already adjusted several times, better I connect you to a manager"* → transfer.  
+- **"Off‑topic but related to the building"** (completion dates, materials, developer) →  
   - If data is available in DB/knowledge base — answer briefly and **return to the current list**, offering to choose.  
   - If no data — say we will check with the manager and transfer.  
-- **“Question about mortgage/lawyers/discounts”** (or any off‑topic) → politely redirect to the manager, as the agent does not handle such topics.  
-- **“Changed my mind, want to start over”** → reset all filters, loop counter = 0, go to **Step 2** (ask parameters from scratch).  
-- **“None of these suit me”** → suggest calling the manager or changing parameters (handle as “change parameters”).
+- **"Question about mortgage/lawyers/discounts"** (or any off‑topic) → politely redirect to the manager, as the agent does not handle such topics.  
+- **"Changed my mind, want to start over"** → reset all filters, loop counter = 0, go to **Step 2** (ask parameters from scratch).  
+- **"None of these suit me"** → suggest calling the manager or changing parameters (handle as "change parameters").
 
 ### Step 11. Generating the commercial offer (CO)
 - Take the selected apartment (or the only one after confirmation).  
-- Check the status in the database in real time — if it has changed to “reserved” (race condition), instead of the CO output: *“Unfortunately, this apartment has just been reserved. Can I offer similar ones?”* and return to the full list (excluding this one).  
+- Check the status in the database in real time — if it has changed to "reserved" (race condition), instead of the CO output: *"Unfortunately, this apartment has just been reserved. Can I offer similar ones?"* and return to the full list (excluding this one).  
 - If status is available — generate a CO template:  
   - Address, building, floor, area, price, purchase terms (from database).  
-  - Add the manager’s contact for further steps.  
+  - Add the manager's contact for further steps.  
+- Generate the **PDF file** of the commercial offer based on the HTML template (`OfferPdfGenerator`) and save it to the database (table `offers`) with status `READY`.  
+- After the offer is successfully generated, the client receives a response with an `offer_pdf` attachment containing a relative link `/api/v1/offers/{offerId}/pdf`. The client can download the PDF in two ways:
+  - by offer ID: `GET /api/v1/offers/{offerId}/pdf`;
+  - by session key (if the offer ID is unknown): `GET /api/v1/chat/sessions/{sessionKey}/offer/pdf`.
 - Send to the user and finish the dialog (or offer to schedule a viewing).
 
 ### Step 12. Event logging for the manager
@@ -201,7 +205,7 @@ flowchart TD
     RaceCondition --> BackToList["Return to full list<br/>(excluding this one)"]
     BackToList --> Step10
     CheckStatus -->|Available| GenerateCP["Generate CO template:<br/>• Address, building, floor<br/>• Area, price<br/>• Purchase terms<br/>• Manager contact"]
-    GenerateCP --> SendCP["Send CO to client"]
+    GenerateCP --> SendCP["Send CO to client<br/>(offer_pdf attachment<br/>with link to /api/v1/offers/{id}/pdf)"]
     SendCP --> EndOffer{Finish or<br/>schedule viewing?}
     EndOffer --> End([Dialog end])
     

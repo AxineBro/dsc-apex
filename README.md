@@ -98,6 +98,7 @@ Key features:
 - Thinking indicator (9 rotating statuses, 4.5-5.5s), `send` button locked while loading
 - Edit last user message / regenerate, copy, markdown tables, `sys-info` pill for manager transfer
 - Parent <-> iframe sync via `postMessage({ type: 'CHAT_MODE_CHANGE', mode })`, body scroll lock in `full`
+- `offer_pdf` attachment with the commercial offer: when the session reaches `OFFER_READY`, the reply contains a link to download the PDF via `/api/v1/offers/{offerId}/pdf` or `/api/v1/chat/sessions/{sessionKey}/offer/pdf`
 
 ## Widget Integration (1 line demo)
 
@@ -197,6 +198,7 @@ See full list in `docs/en/architecture/api_dock.en.md`.
 - `402 Payment Required` from GigaChat — switch `GIGA_CHAT_MODEL` to `GigaChat`, check model activation in SaluteAI cabinet.
 - `Row was already updated (optimistic lock)` — fixed in `ChatFacade` by best-effort second `save`, see branches `fix/lombok-jdk25`, `fix/session-double-save`.
 - `value too long for type character varying(20)` on `manager_tasks` — extend `client_phone` to `varchar(50)` and sanitize placeholder phones.
+- `PDF shows garbled text instead of Cyrillic` — ensure `app.offer.pdf-font-path` points to a TTF font with Cyrillic support (e.g., DejaVuSans.ttf) and that the name in `app.offer.pdf-font-family` matches the CSS template.
 
 </details>
 
@@ -209,7 +211,18 @@ The backend follows a layered architecture that separates concerns and promotes 
 | **Controller**   | REST endpoints, request validation, session header handling, response formatting. |
 | **Application**  | Facade (`ChatFacade`), orchestrator (`AgentOrchestrator`), session manager (`SessionManager`). |
 | **Domain**       | Core business logic: session state, filters, scoring, apartment search, offer generation. |
-| **Infrastructure** | External integrations (GigaChat client, JSON data source, JPA repositories, notification service). |
+| **Infrastructure** | External integrations (GigaChat client, JSON data source, JPA repositories, notification service, PDF generation). |
+
+### Commercial Offer (PDF) Delivery
+
+The backend generates a PDF file of the commercial offer (via `OfferPdfGenerator` based on an HTML template) and persists it in the database in the `offers` table with status `READY`. Two endpoints are provided for downloading the PDF:
+
+| Endpoint                                            | Description                                                     |
+| :-------------------------------------------------- | :-------------------------------------------------------------- |
+| `GET /api/v1/offers/{offerId}/pdf`                  | Download a specific offer PDF by its UUID.                      |
+| `GET /api/v1/chat/sessions/{sessionKey}/offer/pdf`  | Download the latest offer PDF for the given session key.        |
+
+When a session transitions to `OFFER_READY`, the `ChatResponse` includes an `offer_pdf` attachment with a relative URL to the download endpoint. See the [API documentation](docs/en/architecture/api_dock.en.md) for details.
 
 ### Key Design Patterns
 
