@@ -12,7 +12,7 @@ AI assistant for business process automation using GigaChat LLM and external API
 
 ## Production Deployment (for end users)
 
-The simplest way to run **Dsc Apex** is to use the ready‑to‑run Docker images published in [GitHub Packages](https://github.com/AxineBro/dsc-apex/pkgs/container/dsc-apex).  
+The simplest way to run **Dsc Apex** is to use the ready‑to‑run Docker images published in [GitHub Packages](https://github.com/AxineBro?tab=packages&repo_name=dsc-apex).  
 No building, no Java, no Node.js required – just **Docker** and **Docker Compose**.
 
 ### Prerequisites
